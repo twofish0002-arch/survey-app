@@ -1,15 +1,20 @@
 from flask import Flask, request, render_template_string
 import pandas as pd, numpy as np, plotly.graph_objects as go
+import os, json
 import gspread
 from google.oauth2.service_account import Credentials
 
 app = Flask(__name__)
 
 # --- Google Sheets setup (Render secret) ---
-import os, json
-
 service_account_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
-creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
 gc = gspread.authorize(creds)
 
 sheet = gc.open("Imaginative Survey - Responses").sheet1
