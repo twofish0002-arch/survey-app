@@ -17,13 +17,6 @@ SCOPES = [
 creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
 gc = gspread.authorize(creds)
 
-# Open the responses sheet by ID (recommended for reliability)
-sheet = gc.open_by_key("1JoZ5gXl6Dk7NlZOUDEwFGx9EUxyKrNWFLi7AVLgZASg").sheet1
-df = pd.DataFrame(sheet.get_all_records())
-
-# Normalize headers (lowercase, no extra spaces)
-df.columns = df.columns.str.strip().str.lower()
-
 # --- Cube helper functions ---
 def cube_vertices(size):
     coords = [-size / 2, size / 2]
@@ -44,12 +37,17 @@ radii = [0, 0.5, 1, 1.5, 2, 2.5]
 
 @app.route("/")
 def index():
+    # ✅ Reload the sheet fresh each time
+    sheet = gc.open_by_key("1JoZ5gXl6Dk7NlZOUDEwFGx9EUxyKrNWFLi7AVLgZASg").sheet1
+    df = pd.DataFrame(sheet.get_all_records())
+    df.columns = df.columns.str.strip().str.lower()
+
     # Get user’s email (User ID) from URL
     user_id = request.args.get("user_id")
     if not user_id:
         return "Please provide ?user_id=email in the URL"
 
-    # Filter the sheet data for this user (matching normalized header)
+    # Filter the sheet data for this user
     user_rows = df[df['user_id'] == user_id]
     if user_rows.empty:
         return f"No results found for {user_id}"
@@ -153,19 +151,15 @@ def index():
     """, user_id=user_id, k_band=k_band, graph_html=graph_html)
 
 
-# --- Allow iframe embedding ---
-@app.after_request
-def add_headers(response):
-    response.headers["X-Frame-Options"] = "ALLOWALL"
-    response.headers["Content-Security-Policy"] = "frame-ancestors *"
-    return response
-
-
 # --- Allow iframe embedding only from your domain ---
 @app.after_request
 def add_headers(response):
     response.headers["X-Frame-Options"] = "ALLOW-FROM https://thequantumfamily.com"
     response.headers["Content-Security-Policy"] = "frame-ancestors https://thequantumfamily.com"
     return response
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 
 
