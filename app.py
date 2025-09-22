@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, redirect
 import pandas as pd, numpy as np, plotly.graph_objects as go
 import os, json
 import gspread
@@ -18,7 +18,6 @@ creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPE
 gc = gspread.authorize(creds)
 
 # Open the responses sheet by ID (recommended for reliability)
-# Replace YOUR_SPREADSHEET_ID with your actual ID from the sheet URL
 sheet = gc.open_by_key("1JoZ5gXl6Dk7NlZOUDEwFGx9EUxyKrNWFLi7AVLgZASg").sheet1
 df = pd.DataFrame(sheet.get_all_records())
 
@@ -154,7 +153,14 @@ def index():
     """, user_id=user_id, k_band=k_band, graph_html=graph_html)
 
 
+# --- Allow iframe embedding ---
+@app.after_request
+def add_headers(response):
+    response.headers["X-Frame-Options"] = "ALLOWALL"
+    response.headers["Content-Security-Policy"] = "frame-ancestors *"
+    return response
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
 
