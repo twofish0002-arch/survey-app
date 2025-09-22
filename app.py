@@ -28,7 +28,7 @@ def index():
         return "Please provide ?user_id=email in the URL"
 
     # Filter the sheet data for this user
-    user_rows = df[df['User ID'] == user_id]
+    user_rows = df[df['user_id'] == user_id]
     if user_rows.empty:
         return f"No results found for {user_id}"
 
