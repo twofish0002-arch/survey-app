@@ -134,7 +134,7 @@ def index():
                    zaxis=dict(visible=False)),
         width=900,
         height=900,
-        title=f"Survey Result → K Band {band}"
+        title=f"Survey Result → k_band {band}"
     )
 
     graph_html = fig.to_html(full_html=False)
@@ -142,7 +142,7 @@ def index():
     return render_template_string("""
     <html>
     <body>
-      <h2>Survey Result for {{ user_id }} → K Band {{ k_band }}</h2>
+      <h2>Survey Result for {{ user_id }} → k_band {{ k_band }}</h2>
       {{ graph_html | safe }}
       <hr>
       <p><b>Validate your result:</b></p>
