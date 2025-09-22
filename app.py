@@ -85,7 +85,7 @@ def index():
             ))
 
     # Sphere generator
-    def sphere(radius, n=20):
+    def sphere(radius, n=60):
         u = np.linspace(0, 2*np.pi, n)
         v = np.linspace(0, np.pi, n)
         x = radius * np.outer(np.cos(u), np.sin(v))
