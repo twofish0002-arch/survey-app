@@ -97,32 +97,57 @@ def index():
     sphere_traces = []
     label_traces = []
 
-    for step, r in enumerate(radii):
-        if step == 0:
-            fig.add_trace(go.Scatter3d(
-                x=[0], y=[0], z=[0],
-                mode="markers+text",
-                marker=dict(size=5, color="black"),
-                text=["Pupil"], textposition="top center",
-                textfont=dict(color="black", size=18),
-                visible=(band == 0)
-            ))
-        else:
-            x, y, z = sphere(r)
-            fig.add_trace(go.Surface(
-                x=x, y=y, z=z,
-                opacity=0.5,
-                colorscale=[[0, "#088cff"], [1, "#088cff"]],
-                showscale=False,
-                visible=(band == step)
-            ))
-            fig.add_trace(go.Scatter3d(
-                x=[0], y=[0], z=[r*1.2],
-                mode="text",
-                text=[roles[step-1]],
-                textfont=dict(color="black", size=18),
-                visible=(band == step)
-            ))
+for step, r in enumerate(radii):
+    if step == 0:
+        # Small central black sphere for "Pupil"
+        u = np.linspace(0, 2*np.pi, 40)
+        v = np.linspace(0, np.pi, 20)
+        x = (0.3 * np.outer(np.cos(u), np.sin(v))).flatten()
+        y = (0.3 * np.outer(np.sin(u), np.sin(v))).flatten()
+        z = (0.3 * np.outer(np.ones_like(u), np.cos(v))).flatten()
+
+        fig.add_trace(go.Mesh3d(
+            x=x, y=y, z=z,
+            alphahull=0,
+            opacity=0.9,
+            color="black",
+            visible=(band == 0),
+            showscale=False
+        ))
+
+        fig.add_trace(go.Scatter3d(
+            x=[0], y=[0], z=[0.5],
+            mode="text",
+            text=["Pupil"],
+            textfont=dict(color="black", size=18),
+            visible=(band == 0)
+        ))
+
+    else:
+        # Larger blue spheres for Scholar–Artist
+        u = np.linspace(0, 2*np.pi, 40)
+        v = np.linspace(0, np.pi, 20)
+        x = (r * np.outer(np.cos(u), np.sin(v))).flatten()
+        y = (r * np.outer(np.sin(u), np.sin(v))).flatten()
+        z = (r * np.outer(np.ones_like(u), np.cos(v))).flatten()
+
+        fig.add_trace(go.Mesh3d(
+            x=x, y=y, z=z,
+            alphahull=0,
+            opacity=0.5,
+            color="#088cff",
+            visible=(band == step),
+            showscale=False
+        ))
+
+        fig.add_trace(go.Scatter3d(
+            x=[0], y=[0], z=[r*1.2],
+            mode="text",
+            text=[roles[step-1]],
+            textfont=dict(color="black", size=18),
+            visible=(band == step)
+        ))
+
 
     fig.update_layout(
         scene=dict(xaxis=dict(visible=False),
