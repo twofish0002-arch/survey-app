@@ -5,11 +5,11 @@ from google.oauth2.service_account import Credentials
 
 app = Flask(__name__)
 
-# --- Google Sheets setup ---
-SERVICE_ACCOUNT_FILE = "service-account.json"
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+# --- Google Sheets setup (Render secret) ---
+import os, json
 
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+service_account_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+creds = Credentials.from_service_account_info(service_account_info, scopes=["https://www.googleapis.com/auth/spreadsheets"])
 gc = gspread.authorize(creds)
 
 sheet = gc.open("Imaginative Survey - Responses").sheet1
