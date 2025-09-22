@@ -161,6 +161,11 @@ def add_headers(response):
     return response
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+# --- Allow iframe embedding only from your domain ---
+@app.after_request
+def add_headers(response):
+    response.headers["X-Frame-Options"] = "ALLOW-FROM https://thequantumfamily.com"
+    response.headers["Content-Security-Policy"] = "frame-ancestors https://thequantumfamily.com"
+    return response
+
 
