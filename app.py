@@ -57,7 +57,7 @@ def index():
 
     # Get their most recent submission
     latest = user_rows.iloc[-1]
-    k_band = int(latest['K Band'])
+    k_band = int(latest['k_band'])
     band = k_band
 
     fig = go.Figure()
