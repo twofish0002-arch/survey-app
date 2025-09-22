@@ -136,19 +136,20 @@ def index():
 
     graph_html = fig.to_html(full_html=False)
 
-    return render_template_string(f"""
-    <html>
-    <body>
-      <h2>Survey Result for {user_id} → K Band {k_band}</h2>
-      {graph_html}
-      <hr>
-      <p><b>Validate your result:</b></p>
-      <a href="https://your-stripe-checkout-link" target="_blank">
-        <button style="font-size:18px;padding:10px 20px;">Validate & Join Dataset</button>
-      </a>
-    </body>
-    </html>
-    """)
+    return render_template_string("""
+	<html>
+	<body>
+	  <h2>Survey Result for {{ user_id }} → K Band {{ k_band }}</h2>
+	  {{ graph_html | safe }}
+	  <hr>
+	  <p><b>Validate your result:</b></p>
+	  <a href="https://your-stripe-checkout-link" target="_blank">
+	    <button style="font-size:18px;padding:10px 20px;">Validate & Join Dataset</button>
+	  </a>
+	</body>
+	</html>
+	""", user_id=user_id, k_band=k_band, graph_html=graph_html)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
