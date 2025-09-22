@@ -22,7 +22,7 @@ df = pd.DataFrame(sheet.get_all_records())
 
 @app.route("/")
 def index():
-    # Get user’s email (User ID) from URL
+    # Get user’s email (user_id) from URL
     user_id = request.args.get("user_id")
     if not user_id:
         return "Please provide ?user_id=email in the URL"
