@@ -76,7 +76,7 @@ def index():
     # Draw spheres with Mesh3d
     for step, r in enumerate(radii):
         if step == 0:
-            # Small black Pupil sphere
+            # Small black Pupil sphere (shown only if band == 0)
             u = np.linspace(0, 2 * np.pi, 40)
             v = np.linspace(0, np.pi, 20)
             x = (0.3 * np.outer(np.cos(u), np.sin(v))).flatten()
@@ -125,6 +125,21 @@ def index():
                 visible=(band == step)
             ))
 
+    # --- Permanent grey Pupil baseline sphere at origin (always visible) ---
+    u = np.linspace(0, 2 * np.pi, 40)
+    v = np.linspace(0, np.pi, 20)
+    x = (0.3 * np.outer(np.cos(u), np.sin(v))).flatten()
+    y = (0.3 * np.outer(np.sin(u), np.sin(v))).flatten()
+    z = (0.3 * np.outer(np.ones_like(u), np.cos(v))).flatten()
+
+    fig.add_trace(go.Mesh3d(
+        x=x, y=y, z=z,
+        alphahull=0,
+        opacity=0.5,
+        color="grey",
+        showscale=False
+    ))
+
     fig.update_layout(
         scene=dict(xaxis=dict(visible=False),
                    yaxis=dict(visible=False),
@@ -133,6 +148,7 @@ def index():
         height=900,
         title=f"Survey Result → k_band {band}"
     )
+
 
     graph_html = fig.to_html(full_html=False)
 
