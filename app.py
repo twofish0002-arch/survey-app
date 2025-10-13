@@ -1,23 +1,113 @@
-from flask import Flask, request, render_template_string, redirect
-import pandas as pd, numpy as np, plotly.graph_objects as go
-import os, json
+from flask import Flask, request, render_template_string
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+import os
+import json
 import gspread
 from google.oauth2.service_account import Credentials
 
 app = Flask(__name__)
 
-# --- Google Sheets setup (Render secret) ---
-service_account_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+# --- Final, Corrected Google Sheets setup ---
+gc = None
+try:
+    gc = gspread.service_account(filename="credentials.json")
+except FileNotFoundError:
+    print("!!! ERROR: 'credentials.json' not found. Please make sure the file is in the same folder. !!!")
+except Exception as e:
+    print(f"!!! ERROR: An error occurred during authorization: {e} !!!")
 
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
 
-creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
-gc = gspread.authorize(creds)
+# --- Final, Leadership-Focused Role Content with All Text Updates ---
+role_details = {
+    "Scholar": {
+        "leadership_title": "As an academic leader, you enjoy teaching others and showing them what’s real and worth knowing.",
+        "game_name": "Academic Game",
+        "definition": "A scholar is an individual who creates value by seeking truth and curating knowledge. Driven by the foundational question, “What’s this?”, their leadership begins with the pursuit of clarity. Their strength lies in connecting generations by preserving and building upon essential ideas.",
+        "game_description": "Your profile suggests a preference for clear guidance and a world of knowns, allowing you to master a subject with precision. The Academic Game matches this perfectly. It gives you a mentor-led path where you can ask and resolve 'What's this?' questions, focus your attention on a single, deep line of inquiry, and have the space to precisely curate and understand existing knowledge.",
+        "bullets": ["Asks questions", "Seeks truth", "Dislikes rushing", "Studies deeply", "Shares knowledge"],
+        "profile": {
+            "What excites youWhat excites you??": "Asking big questions and finding answers.",
+            "What matters?": "Clear thinking, careful work, and learning.",
+            "A great day looks like…": "You wake up with a puzzle in your head. You spend hours reading, testing, and writing until the answer starts to shine.",
+            "What you don’t like…": "Being rushed to finish before you’re ready.",
+            "Secret power": "You help the world remember what is true."
+        }
+    },
+    "Servant": {
+        "leadership_title": "As a community leader, you enjoy caring for people and creating relationships and harmony.",
+        "game_name": "Neoclassical Game",
+        "definition": "A servant is an individual who creates value by building trust and ensuring systems run smoothly. Driven by the question, “Can I?”, which honours established boundaries, their leadership strength is creating the stability and psychological safety that empowers a group to succeed together.",
+        "game_description": "Your profile suggests you thrive within a trusted community with clear rules, where you can take on and manage important tasks for the group. The Neoclassical Game matches this perfectly. It provides clear institutional boundaries where you can ask and resolve 'Can I?' questions, focus your attention on improving systems and processes that serve the entire community.",
+        "bullets": ["Helps others", "Keeps order", "Dislikes chaos", "Builds trust", "Bonds groups"],
+        "profile": {
+            "What excites you?": "Helping people feel safe, welcome, and treated fairly.",
+            "What matters?": "Rules, fairness, and making sure groups stay connected.",
+            "A great day looks like…": "You quietly make sure everyone has what they need. By the end, the group has worked well together because of you.",
+            "What you don’t like…": "Chaos, unfairness, or people breaking promises.",
+            "Secret power": "You are the glue that holds people together."
+        }
+    },
+    "Engineer": {
+        "leadership_title": "As a project leader, you enjoy helping everyone on the team to solve really challenging problems together.",
+        "game_name": "Progressive Game",
+        "definition": "An engineer is an individual who creates value by turning ideas into reality. Driven by the practical question, “How can I?”, their leadership strength is planning, building, and delivering reliable results that move a team forward. This role is broader than just a technical profession; it is about taking ownership of the 'how.'",
+        "game_description": "Your profile suggests a desire for clear objectives and the freedom to solve real problems, balancing knowns and unknowns. The Progressive Game matches this perfectly. It gives you a clear path to follow, where the directive is \"I must.\" It allows you to focus your attention on a predictable schedule and provides the opportunity to master given material with precision.",
+        "bullets": ["Solves problems", "Wants results", "Dislikes worksheets", "Builds with team", "Makes ideas real"],
+        "profile": {
+            "What excites you?": "Solving problems with tools and teamwork.",
+            "What matters?": "Making things that work and last.",
+            "A great day looks like…": "You carefully decide who to serve and which problem to solve. You test, fix, and by the end, you can proudly say, “It works!”",
+            "What you don’t like…": "Endless worksheets that don’t matter in real life.",
+            "Secret power": "You make ideas real."
+        }
+    },
+    "Founder": {
+        "leadership_title": "As a visionary leader, you enjoy the thrill of imagining the unimaginable and inviting others to follow.",
+        "game_name": "Neotraditional Game",
+        "definition": "A founder is an individual who creates value by reimagining what is possible and pursuing new opportunities. Driven by the expansive question, “What if?”, their leadership strength is the ability to sustain uncertainty and inspire others to help build a new future.",
+        "game_description": "Your profile suggests a high level of self-trust and a comfort with the unknown, along with a strong desire to take ownership of your own ideas and their outcomes. The Neotraditional Game matches this perfectly. It gives you full control to ask and resolve 'What if?' questions, focus your attention on a wide-open space for experimentation, and have the permission to create new value from your own vision.",
+        "bullets": ["Chases ideas", "Breaks rules", "Dislikes limits", "Takes risks", "Sees future"],
+        "profile": {
+            "What excites you?": "Chasing big ideas and trying new things.",
+            "What matters?": "Freedom to experiment and taking risks.",
+            "A great day looks like…": "A spark hits: you sketch, test, and tinker until your idea begins to take shape.",
+            "What you don’t like…": "Being stuck in rules that stop you from exploring.",
+            "Secret power": "You see the future before others do."
+        }
+    },
+    "Artist": {
+        "leadership_title": "As a philosophical leader, you enjoy exploring boundaries and expressing meaning, beauty, and truth.",
+        "game_name": "Democratic Game",
+        "definition": "An artist is an individual who creates value by exploring, expressing and giving form to the unknown. Driven by the ultimate question, “Why?”, their leadership strength is serving as a moral and aesthetic compass for society, creating works that connect us to beauty and eternal truths.",
+        "game_description": "Your profile suggests a deep trust in your own intuition and a need for unstructured freedom, where you are the ultimate judge of your own work. The Democratic Game matches this perfectly. It provides a blank canvas with near-total control where you can ask and resolve 'Why?' questions, direct your own attention without external goals, and have the freedom to create something based on your own standard of authentic expression.",
+        "bullets": ["Creates freely", "Loves beauty", "Dislikes rules", "Shares feelings", "Shows meaning"],
+        "profile": {
+            "What excites you?": "Drawing, singing, writing, or creating something new.",
+            "What matters?": "Freedom, beauty, and sharing your heart.",
+            "A great day looks like…": "A picture, sound, or feeling comes to you. You follow it until it becomes real, then share it with others.",
+            "What you don’t like…": "Being told there’s only one right way to do things.",
+            "Secret power": "You remind people what really matters."
+        }
+    },
+    "Pupil": {
+        "leadership_title": "As an excellent pupil, you enjoy being an exemplary student and reliable follower.",
+        "game_name": "Standardised Game",
+        "definition": "A pupil is the foundational role for learning within a highly structured environment. A Pupil creates value by demonstrating excellence in compliance. Guided by the directive, “I must,” their core strength is following instructions with precision, a necessary skill before a player discovers their leadership style.",
+        "game_description": "Your profile suggests a need for a safe, predictable environment with clear, step-by-step guidance, where success comes from following instructions perfectly. The Standardised Game matches this perfectly. It gives you a clear path to follow, where the directive is 'I must,' allows you to focus your attention on a predictable schedule, and provides the opportunity to master given material with precision.",
+        "bullets": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"],
+        "profile": {
+            "What excites you?": "Doing the task exactly right and getting approval.",
+            "What matters?": "Safety, clear instructions, and meeting expectations.",
+            "A great day looks like…": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick.",
+            "What you don’t like…": "Uncertainty, unclear instructions, or self-direction.",
+            "Secret power": "You are excellent at following orders in an emergency."
+        }
+    }
+}
 
-# --- Cube helper functions ---
+# --- Cube helper functions and Plotly setup ---
 def cube_vertices(size):
     coords = [-size / 2, size / 2]
     return np.array([[x, y, z] for x in coords for y in coords for z in coords])
@@ -30,148 +120,194 @@ for i in range(8):
             edges.append((i, j))
 
 sizes = [1, 2, 3, 4, 5]
-roles = ["Scholar", "Servant", "Engineer", "Founder", "Artist"]
 colors = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd", "#d62728"]
 radii = [0, 0.5, 1, 1.5, 2, 2.5]
 
 
 @app.route("/")
 def index():
-    # ✅ Reload the sheet fresh each time
-    sheet = gc.open_by_key("1JoZ5gXl6Dk7NlZOUDEwFGx9EUxyKrNWFLi7AVLgZASg").sheet1
-    df = pd.DataFrame(sheet.get_all_records())
-    df.columns = df.columns.str.strip().str.lower()
+    if not gc:
+        return "Application not configured. Please check the terminal output for ERROR messages to see why."
 
-    # Get user’s email (User ID) from URL
+    try:
+        sheet = gc.open_by_key("1JoZ5gXl6Dk7NlZOUDEwFGx9EUxyKrNWFLi7AVLgZASg").sheet1
+        df = pd.DataFrame(sheet.get_all_records())
+        df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
+    except gspread.exceptions.SpreadsheetNotFound:
+        return "Error: Spreadsheet not found. Check the key and permissions."
+    except Exception as e:
+        return f"An error occurred while accessing Google Sheets: {e}"
+
     user_id = request.args.get("user_id")
     if not user_id:
-        return "Please provide ?user_id=email in the URL"
+        return "Please provide ?user_id=your_email in the URL to see your results."
 
-    # Filter the sheet data for this user
     user_rows = df[df['user_id'] == user_id]
     if user_rows.empty:
-        return f"No results found for {user_id}"
+        return f"Sorry, no results were found for the user ID: {user_id}"
 
-    # Get their most recent submission
     latest = user_rows.iloc[-1]
-    k_band = int(latest['k_band'])
+    
+    try:
+        f_score = int(latest['freedom'])
+        s_score = int(latest['security'])
+        r_score = int(latest['responsibility'])
+        k_band = int(latest['k_band'])
+        
+        role_name_map = {0: "Pupil", 1: "Scholar", 2: "Servant", 3: "Engineer", 4: "Founder", 5: "Artist"}
+        role = role_name_map.get(k_band, "Pupil")
+        details = role_details.get(role, role_details["Pupil"])
+    except (ValueError, KeyError) as e:
+        return f"There was an error processing your data. Please check the sheet for correct column headers. The script could not find the column: {e}"
+        
     band = k_band
 
+    # --- 3D VISUAL GENERATION ---
     fig = go.Figure()
-
-    # Draw cubes
+    
     cubes = [cube_vertices(s) for s in sizes]
     for c_idx, cube in enumerate(cubes):
         for i, j in edges:
-            fig.add_trace(go.Scatter3d(
-                x=[cube[i, 0], cube[j, 0]],
-                y=[cube[i, 1], cube[j, 1]],
-                z=[cube[i, 2], cube[j, 2]],
-                mode="lines",
-                line=dict(color=colors[c_idx], width=3),
-                showlegend=False,
-                visible=True
-            ))
+            fig.add_trace(go.Scatter3d(x=[cube[i, 0], cube[j, 0]], y=[cube[i, 1], cube[j, 1]], z=[cube[i, 2], cube[j, 2]], mode="lines", line=dict(color=colors[c_idx], width=2), showlegend=False))
+            
+    role_radius = radii[band]
+    if band > 0:
+        u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
+        x, y, z = role_radius * np.cos(u) * np.sin(v), role_radius * np.sin(u) * np.sin(v), role_radius * np.cos(v)
+        fig.add_trace(go.Mesh3d(x=x.flatten(), y=y.flatten(), z=z.flatten(), alphahull=0, opacity=0.6, color="#088cff", showscale=False))
 
-    # Draw spheres with Mesh3d
-    for step, r in enumerate(radii):
-        if step == 0:
-            # Small black Pupil sphere (shown only if band == 0)
-            u = np.linspace(0, 2 * np.pi, 40)
-            v = np.linspace(0, np.pi, 20)
-            x = (0.3 * np.outer(np.cos(u), np.sin(v))).flatten()
-            y = (0.3 * np.outer(np.sin(u), np.sin(v))).flatten()
-            z = (0.3 * np.outer(np.ones_like(u), np.cos(v))).flatten()
-
-            fig.add_trace(go.Mesh3d(
-                x=x, y=y, z=z,
-                alphahull=0,
-                opacity=0.9,
-                color="black",
-                visible=(band == 0),
-                showscale=False
-            ))
-
-            fig.add_trace(go.Scatter3d(
-                x=[0], y=[0], z=[0.5],
-                mode="text",
-                text=["Pupil"],
-                textfont=dict(color="black", size=18),
-                visible=(band == 0)
-            ))
-
-        else:
-            # Blue spheres for Scholar–Artist
-            u = np.linspace(0, 2 * np.pi, 40)
-            v = np.linspace(0, np.pi, 20)
-            x = (r * np.outer(np.cos(u), np.sin(v))).flatten()
-            y = (r * np.outer(np.sin(u), np.sin(v))).flatten()
-            z = (r * np.outer(np.ones_like(u), np.cos(v))).flatten()
-
-            fig.add_trace(go.Mesh3d(
-                x=x, y=y, z=z,
-                alphahull=0,
-                opacity=0.5,
-                color="#088cff",
-                visible=(band == step),
-                showscale=False
-            ))
-
-            fig.add_trace(go.Scatter3d(
-                x=[0], y=[0], z=[r * 1.2],
-                mode="text",
-                text=[roles[step - 1]],
-                textfont=dict(color="black", size=18),
-                visible=(band == step)
-            ))
-
-    # --- Permanent grey Pupil baseline sphere at origin (always visible) ---
-    u = np.linspace(0, 2 * np.pi, 40)
-    v = np.linspace(0, np.pi, 20)
-    x = (0.3 * np.outer(np.cos(u), np.sin(v))).flatten()
-    y = (0.3 * np.outer(np.sin(u), np.sin(v))).flatten()
-    z = (0.3 * np.outer(np.ones_like(u), np.cos(v))).flatten()
-
-    fig.add_trace(go.Mesh3d(
-        x=x, y=y, z=z,
-        alphahull=0,
-        opacity=0.5,
-        color="grey",
-        showscale=False
-    ))
-
+    u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
+    x, y, z = 0.2 * np.cos(u) * np.sin(v), 0.2 * np.sin(u) * np.sin(v), 0.2 * np.cos(v)
+    fig.add_trace(go.Mesh3d(x=x.flatten(), y=y.flatten(), z=z.flatten(), alphahull=0, opacity=0.5, color="grey", showscale=False))
+    
+    label_z = (role_radius + 0.5) if band > 0 else 0.5
+    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[label_z], mode="text", text=[role], textfont=dict(color="black", size=16, family="Arial, sans-serif")))
+    
     fig.update_layout(
-        scene=dict(xaxis=dict(visible=False),
-                   yaxis=dict(visible=False),
-                   zaxis=dict(visible=False)),
-        width=900,
-        height=900,
-        title=f"Survey Result → k_band {band}"
+        autosize=True,
+        scene=dict(
+            xaxis=dict(visible=False), 
+            yaxis=dict(visible=False), 
+            zaxis=dict(visible=False), 
+            camera=dict(eye=dict(x=1.5, y=1.5, z=1.5))
+        ), 
+        margin=dict(l=0, r=0, b=0, t=0)
     )
+    graph_html = fig.to_html(full_html=False, config={'displayModeBar': False}, include_plotlyjs='cdn')
+    
+    html_template = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Survey Results</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; text-align: center; }
+            .container { max-width: 900px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 40px; }
+            p { font-size: 1.1em; line-height: 1.7; color: #555; text-align: left; }
+            .cta-button { display: inline-block; background-color: #e7f3ff; color: #0056b3; border: 1px solid #b8d9f7; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s; }
+            .cta-button:hover { background-color: #d0e7ff; }
+            .content-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px 30px; margin-bottom: 25px; }
+            .reveal-box h1 { font-size: 3em; margin: 0 0 10px 0; color: #2c3e50; }
+            .reveal-box h2 { font-size: 1.5em; margin: 0; color: #2c3e50; font-weight: normal; }
+            .reveal-box p { font-size: 1.2em; margin: 0; color: #2c3e50; text-align: center; }
+            
+            .strengths-container { display: flex; justify-content: space-between; gap: 30px; margin: 40px 0 25px 0; flex-wrap: wrap; }
+            .strength-item { flex-grow: 1; flex-basis: 200px; text-align: left; }
+            .strength-item h4 { margin-bottom: 8px; font-size: 1.1em; font-weight: 600; color: #2c3e50; }
+            .bar-bg { background-color: #e9ecef; border-radius: 8px; height: 24px; overflow: hidden; }
+            .bar-fill { background-color: #007bff; height: 100%; border-radius: 8px; }
 
+            .visual-insights-container { display: flex; flex-direction: column; gap: 25px; }
+            .top-row, .bottom-row { display: flex; flex-wrap: wrap; gap: 25px; }
+            .info-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px; text-align: left; overflow: hidden; }
+            
+            .visual-column { flex: 1.5; min-width: 350px; }
+            .insights-column { flex: 1; min-width: 300px; }
+            .characteristics-box { flex: 1.5; }
+            .leadership-box { flex: 1; }
 
-    graph_html = fig.to_html(full_html=False)
-
-    return render_template_string("""
-    <html>
+            .profile-section h3 { margin-top: 0; color: #2c3e50; }
+            .profile-section ul { list-style-type: '✓  '; padding-left: 20px; font-size: 1.1em; margin-top: 10px; }
+            .profile-section li { margin-bottom: 12px; }
+            .profile-section h4 { color: #0056b3; font-size: 1.1em; font-weight: 600; margin-top: 20px; margin-bottom: 5px; }
+            .profile-section p { margin-top: 0; }
+            .graph-container { width: 100%; height: 450px; display: flex; justify-content: center; align-items: center; }
+            .visual-note { font-size: 0.9em; text-align: center; color: #6c757d; margin-top: 15px; }
+        </style>
+    </head>
     <body>
-      <h2>Survey Result for {{ user_id }} → k_band {{ k_band }}</h2>
-      {{ graph_html | safe }}
-      <hr>
+        <div class="container">
+            <div class="content-box reveal-box">
+                <h1>{{ role }}!!</h1>
+                <h2>Congratulations!</h2>
+                <p>Your survey suggests the {{ details.game_name }}.</p>
+            </div>
+
+            <p>In a growth game like TwoFish, your suggested starting point is the role of {{ role }} in the {{ details.game_name }}. {{ details.definition }}</p>
+
+            <div class="strengths-container">
+                <div class="strength-item"><h4>Freedom (F = {{ f_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (f_score / 5) * 100 }}%;"></div></div></div>
+                <div class="strength-item"><h4>Security (S = {{ s_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (s_score / 5) * 100 }}%;"></div></div></div>
+                <div class="strength-item"><h4>Responsibility (R = {{ r_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (r_score / 5) * 100 }}%;"></div></div></div>
+            </div>
+
+            <div class="content-box">
+                <h3 style="margin-top:0;">What your choices revealed.</h3>
+                <p style="margin-bottom:0;">{{ details.game_description }}</p>
+            </div>
+
+            <div class="visual-insights-container">
+                <div class="top-row">
+                    <div class="info-box visual-column">
+                        <h3 style="margin-top:0;">The space you need to grow.</h3>
+                        <div class="graph-container">{{ graph_html | safe }}</div>
+                        <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
+                    </div>
+                    <div class="info-box insights-column profile-section">
+                        <h3>Diagnostic Insights</h3>
+                        {% for key, value in details.profile.items() if key != 'Leadership style' %}
+                            <h4>{{ key }}</h4>
+                            <p>{{ value }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="bottom-row">
+                    <div class="info-box characteristics-box profile-section">
+                        <h3>Role characteristics</h3>
+                        <ul>
+                        {% for item in details.bullets %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="info-box leadership-box profile-section">
+                        <h3>Leadership style</h3>
+                        <p>{{ details.leadership_title }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
+            
+            <h3>The Journey Ahead</h3>
+            <p>The role of a Pupil ends the day school ends. TwoFish trains children to be value creators, leaders in the Free Market Economy, and the Spatial Indicator (SI) tool reveals which of the five roles is the best place to begin. To learn more about TwoFish and The Quantum Family, validate your results and receive the full story behind the tool and the game.</p>
+            
+            <a href="#" class="cta-button">Validate results & receive paper.</a>
+        </div>
     </body>
     </html>
-    """, user_id=user_id, k_band=k_band, graph_html=graph_html)
+    """
+    return render_template_string(
+        html_template, user_id=user_id, role=role, f_score=f_score, s_score=s_score, r_score=r_score, details=details, graph_html=graph_html
+    )
 
-
-# --- Allow iframe embedding only from your domain ---
 @app.after_request
 def add_headers(response):
     response.headers["X-Frame-Options"] = "ALLOW-FROM https://thequantumfamily.com"
     response.headers["Content-Security-Policy"] = "frame-ancestors https://thequantumfamily.com"
     return response
 
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
-
-
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
