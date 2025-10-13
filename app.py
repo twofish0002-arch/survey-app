@@ -12,16 +12,17 @@ app = Flask(__name__)
 SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 
 
-# --- Final, Leadership-Focused Role Content ---
+# --- Final, V2 Role Content with Leadership Style Update ---
 role_details = {
     "Scholar": {
-        "leadership_title": "As an academic leader, you enjoy teaching others and showing them what’s real and worth knowing.",
+        "leadership_title": "An Academic Leader",
+        "leadership_style_sentence": "As an academic leader, you enjoy teaching others and showing them what’s real and worth knowing.",
         "game_name": "Academic Game",
-        "definition": "A scholar is an individual who creates value by seeking truth and curating knowledge. Driven by the foundational question, “What’s this?”, their leadership begins with the pursuit of clarity. Their strength lies in connecting generations by preserving and building upon essential ideas.",
+        "definition": "As an Academic Leader, your gift is to find and share what is true and important. You achieve this through the focused role of the Scholar, diving deep into questions, curating knowledge, and connecting the past to the future. You thrive in the Academic Game, where you have the guidance and space to pursue a single line of inquiry and truly master a subject.",
         "game_description": "Your profile suggests a preference for clear guidance and a world of knowns, allowing you to master a subject with precision. The Academic Game matches this perfectly. It gives you a mentor-led path where you can ask and resolve 'What's this?' questions, focus your attention on a single, deep line of inquiry, and have the space to precisely curate and understand existing knowledge.",
         "bullets": ["Asks questions", "Seeks truth", "Dislikes rushing", "Studies deeply", "Shares knowledge"],
         "profile": {
-            "What makes you excited?": "Asking big questions and finding answers.",
+            "What excites you?": "Asking big questions and finding answers.",
             "What matters?": "Clear thinking, careful work, and learning.",
             "A great day looks like…": "You wake up with a puzzle in your head. You spend hours reading, testing, and writing until the answer starts to shine.",
             "What you don’t like…": "Being rushed to finish before you’re ready.",
@@ -29,13 +30,14 @@ role_details = {
         }
     },
     "Servant": {
-        "leadership_title": "As a community leader, you enjoy caring for people and creating relationships and harmony.",
+        "leadership_title": "A Community Leader",
+        "leadership_style_sentence": "As a community leader, you enjoy caring for people and creating relationships and harmony.",
         "game_name": "Neoclassical Game",
-        "definition": "A servant is an individual who creates value by building trust and ensuring systems run smoothly. Driven by the question, “Can I?”, which honours established boundaries, their leadership strength is creating the stability and psychological safety that empowers a group to succeed together.",
-        "game_description": "Your profile suggests you thrive within a trusted community with clear rules, where you can take on and manage important tasks for the group. The Neoclassical Game matches this perfectly. It provides clear institutional boundaries where you can ask and resolve 'Can I?' questions, focus your attention on improving systems and processes that serve the entire community.",
+        "definition": "As a Community Leader, you bring people together and build strong, successful groups. You do this by mastering the essential Servant role; you are the trusted force that creates harmony and ensures everyone can succeed together. Your ideal environment is the Neoclassical Game, where clear rules and a valuable community let your skills shine.",
+        "game_description": "Your profile suggests you thrive within a valuable community with clear rules, where you can take on and manage important tasks for the group. The Neoclassical Game matches this perfectly. It provides clear institutional boundaries where you can ask and resolve 'Can I?' questions, focus your attention on improving systems and processes that serve the entire community.",
         "bullets": ["Helps others", "Keeps order", "Dislikes chaos", "Builds trust", "Bonds groups"],
         "profile": {
-            "What makes you excited?": "Helping people feel safe, welcome, and treated fairly.",
+            "What excites you?": "Helping people feel safe, welcome, and treated fairly.",
             "What matters?": "Rules, fairness, and making sure groups stay connected.",
             "A great day looks like…": "You quietly make sure everyone has what they need. By the end, the group has worked well together because of you.",
             "What you don’t like…": "Chaos, unfairness, or people breaking promises.",
@@ -43,13 +45,14 @@ role_details = {
         }
     },
     "Engineer": {
-        "leadership_title": "As a project leader, you enjoy helping everyone on the team to solve really challenging problems together.",
+        "leadership_title": "A Project Leader",
+        "leadership_style_sentence": "As a project leader, you enjoy helping everyone on the team to solve really challenging problems together.",
         "game_name": "Progressive Game",
-        "definition": "An engineer is an individual who creates value by turning ideas into reality. Driven by the practical question, “How can I?”, their leadership strength is planning, building, and delivering reliable results that move a team forward. This role is broader than just a technical profession; it is about taking ownership of the 'how.'",
-        "game_description": "Your profile suggests a desire for clear objectives and the freedom to solve real problems, balancing knowns and unknowns. The Progressive Game matches this perfectly. It gives you a clear path to follow, where the directive is \"I must.\" It allows you to focus your attention on a predictable schedule and provides the opportunity to master given material with precision.",
+        "definition": "As a Project Leader, you excel at turning plans into reality and getting things done. You do this by embracing the role of the Engineer, a practical problem-solver who plans, builds, and delivers reliable results. Your best work happens in the Progressive Game, an environment with clear and meaningful objectives that gives you the freedom to figure out the solution.",
+        "game_description": "Your profile suggests a desire for clear objectives and the freedom to solve real problems, balancing knowns and unknowns. The Progressive Game perfectly matches this. It provides access to the “How?” question, encouraging you to explore solutions within a boundary you can manage and to use your imagination to find the most efficient way to solve a challenging problem.",
         "bullets": ["Solves problems", "Wants results", "Dislikes worksheets", "Builds with team", "Makes ideas real"],
         "profile": {
-            "What makes you excited?": "Solving problems with tools and teamwork.",
+            "What excites you?": "Solving problems with tools and teamwork.",
             "What matters?": "Making things that work and last.",
             "A great day looks like…": "You carefully decide who to serve and which problem to solve. You test, fix, and by the end, you can proudly say, “It works!”",
             "What you don’t like…": "Endless worksheets that don’t matter in real life.",
@@ -57,13 +60,14 @@ role_details = {
         }
     },
     "Founder": {
-        "leadership_title": "As a visionary leader, you enjoy the thrill of imagining the unimaginable and inviting others to follow.",
+        "leadership_title": "A Visionary Leader",
+        "leadership_style_sentence": "As a visionary leader, you enjoy the thrill of imagining the unimaginable and inviting others to follow.",
         "game_name": "Neotraditional Game",
-        "definition": "A founder is an individual who creates value by reimagining what is possible and pursuing new opportunities. Driven by the expansive question, “What if?”, their leadership strength is the ability to sustain uncertainty and inspire others to help build a new future.",
+        "definition": "As a Visionary Leader, your unique talent is to imagine what could be and inspire others to build it. This comes from your natural role as a Founder; someone who is comfortable with uncertainty, breaks the rules, and chases bold new opportunities. You are at your best in the Neotraditional Game, which gives you the wide-open space to experiment, take risks, and create something entirely new.",
         "game_description": "Your profile suggests a high level of self-trust and a comfort with the unknown, along with a strong desire to take ownership of your own ideas and their outcomes. The Neotraditional Game matches this perfectly. It gives you full control to ask and resolve 'What if?' questions, focus your attention on a wide-open space for experimentation, and have the permission to create new value from your own vision.",
         "bullets": ["Chases ideas", "Breaks rules", "Dislikes limits", "Takes risks", "Sees future"],
         "profile": {
-            "What makes you excited?": "Chasing big ideas and trying new things.",
+            "What excites you?": "Chasing big ideas and trying new things.",
             "What matters?": "Freedom to experiment and taking risks.",
             "A great day looks like…": "A spark hits: you sketch, test, and tinker until your idea begins to take shape.",
             "What you don’t like…": "Being stuck in rules that stop you from exploring.",
@@ -71,13 +75,14 @@ role_details = {
         }
     },
     "Artist": {
-        "leadership_title": "As a philosophical leader, you enjoy exploring boundaries and expressing meaning, beauty, and truth.",
+        "leadership_title": "A Philosophical Leader",
+        "leadership_style_sentence": "As a philosophical leader, you enjoy exploring boundaries and expressing meaning, beauty, and truth.",
         "game_name": "Democratic Game",
-        "definition": "An artist is an individual who creates value by exploring authenticity and giving form to the unknown. Driven by the ultimate question, “Why?”, their leadership strength is serving as a moral and aesthetic compass for society, creating works that connect us to beauty and eternal truths.",
-        "game_description": "Your profile suggests a deep trust in your own intuition and a need for unstructured freedom, where you are the ultimate judge of your own work. The Democratic Game matches this perfectly. It provides a blank canvas with near-total control where you can ask and resolve 'Why?' questions, direct your own attention without external goals, and have the freedom to create something based on your own standard of authentic expression.",
-        "bullets": ["Creates freely", "Loves beauty", "Dislikes rules", "Shares feelings", "Shows meaning"],
+        "definition": "As a Philosophical Leader, you serve as a moral and aesthetic compass for others by exploring the deep question of 'Why?' You express this through the powerful role of the Artist, creating works that connect us to beauty, emotion, and profound truths. You need the Democratic Game, a blank canvas that provides total freedom to follow your intuition and create something authentically yours.",
+        "game_description": "Your profile suggests a deep trust in your own intuition and a need for unstructured play, where you are the ultimate judge of your own work. The Democratic Game matches this perfectly. It provides a blank canvas with near-total control where you can ask and resolve 'Why?' questions, direct your own attention without external goals, and have the freedom to create something based on your own standard of authentic expression.",
+        "bullets": ["Creates freely", "Loves beauty", "Dislikes rules", "Shares feelings", "Pursues meaning"],
         "profile": {
-            "What makes you excited?": "Drawing, singing, writing, or creating something new.",
+            "What excites you?": "Drawing, singing, writing, or creating something new.",
             "What matters?": "Freedom, beauty, and sharing your heart.",
             "A great day looks like…": "A picture, sound, or feeling comes to you. You follow it until it becomes real, then share it with others.",
             "What you don’t like…": "Being told there’s only one right way to do things.",
@@ -85,13 +90,14 @@ role_details = {
         }
     },
     "Pupil": {
-        "leadership_title": "As an excellent pupil, you enjoy being an exemplary student and reliable follower.",
+        "leadership_title": "A Classroom Leader",
+        "leadership_style_sentence": "As an excellent pupil, you enjoy being an exemplary student and reliable follower.",
         "game_name": "Standardised Game",
-        "definition": "A pupil is the foundational role for learning within a highly structured environment. A Pupil creates value by demonstrating excellence in compliance. Guided by the directive, “I must,” their core strength is following instructions with precision, a necessary skill before a player discovers their leadership style.",
-        "game_description": "Your profile suggests a need for a safe, predictable environment with clear, step-by-step guidance, where success comes from following instructions perfectly. The Standardised Game matches this perfectly. It gives you a clear path to follow, where the directive is 'I must,' allows you to focus your attention on a predictable schedule, and provides the opportunity to master given material with precision.",
+        "definition": "As a classroom leader, your first critical skill is executing instructions with precision and excellence. This is the role of the Pupil: mastering the ability to follow a pre-drawn map and mirror the expectations of an external authority. You operate within the Standardised Game, a world that serves the past and a time when leadership and creativity were not valued.",
+        "game_description": "Your profile suggests a need for a safe, predictable environment with clear guidance, where your success is validated by a trusted authority. The Standardised Game matches this perfectly. It provides a clear path to follow, where the directive is 'I must.' It allows you to focus on a predictable schedule and offers the opportunity to master given material with precision, removing the uncertainty of self-direction.",
         "bullets": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"],
         "profile": {
-            "What makes you excited?": "Doing the task exactly right and getting approval.",
+            "What excites you?": "Doing the task exactly right and getting approval.",
             "What matters?": "Safety, clear instructions, and meeting expectations.",
             "A great day looks like…": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick.",
             "What you don’t like…": "Uncertainty, unclear instructions, or self-direction.",
@@ -187,6 +193,7 @@ def index():
     )
     graph_html = fig.to_html(full_html=False, config={'displayModeBar': False}, include_plotlyjs='cdn')
     
+    # --- FINAL HTML TEMPLATE ---
     html_template = """
     <!DOCTYPE html>
     <html lang="en">
@@ -198,10 +205,14 @@ def index():
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; text-align: center; }
             .container { max-width: 900px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 40px; }
             p { font-size: 1.1em; line-height: 1.7; color: #555; text-align: left; }
+            .cta-button { display: inline-block; background-color: #e7f3ff; color: #0056b3; border: 1px solid #b8d9f7; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s; }
+            .cta-button:hover { background-color: #d0e7ff; }
             .content-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px 30px; margin-bottom: 25px; }
-            .reveal-box h1 { font-size: 3em; margin: 0 0 10px 0; color: #2c3e50; }
-            .reveal-box h2 { font-size: 1.5em; margin: 0; color: #2c3e50; font-weight: normal; }
-            .reveal-box p { font-size: 1.2em; margin: 0; color: #2c3e50; text-align: center; }
+            
+            .reveal-box { padding: 30px; }
+            .reveal-box .intro-text { font-size: 1em; margin: 0; color: #2c3e50; text-align: center; }
+            .reveal-box .role-name { font-size: 3.5em; font-weight: bold; margin: 10px 0; color: #2c3e50; }
+            .reveal-box .leadership-title { font-size: 1.7em; margin: 0; color: #2c3e50; font-weight: normal; }
             
             .strengths-container { display: flex; justify-content: space-between; gap: 30px; margin: 40px 0 25px 0; flex-wrap: wrap; }
             .strength-item { flex-grow: 1; flex-basis: 200px; text-align: left; }
@@ -230,12 +241,12 @@ def index():
     <body>
         <div class="container">
             <div class="content-box reveal-box">
-                <h1>{{ role }}!!</h1>
-                <h2>Congratulations!</h2>
-                <p>Your survey suggests the {{ details.game_name }}.</p>
+                <p class="intro-text">{% if role == 'Pupil' %}Comiserations! Your challenge is to objectify the...{% else %}Congratulations! Your unique genius is that of the...{% endif %}</p>
+                <h1 class="role-name">{{ role }}</h1>
+                <h2 class="leadership-title">{{ details.leadership_title }}</h2>
             </div>
 
-            <p>In a growth game like TwoFish, your suggested starting point is the role of {{ role }} in the {{ details.game_name }}. {{ details.definition }}</p>
+            <p>{{ details.definition }}</p>
 
             <div class="strengths-container">
                 <div class="strength-item"><h4>Freedom (F = {{ f_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (f_score / 5) * 100 }}%;"></div></div></div>
@@ -274,7 +285,7 @@ def index():
                     </div>
                     <div class="info-box leadership-box profile-section">
                         <h3>Leadership style</h3>
-                        <p>{{ details.leadership_title }}</p>
+                        <p>{{ details.leadership_style_sentence }}</p>
                     </div>
                 </div>
             </div>
@@ -282,7 +293,7 @@ def index():
             <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
             
             <h3>The Journey Ahead</h3>
-            <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
+            <p>For many, the role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that await value creators, forming the interdependent foundations of the Free Market Economy (FME).</p>
             
         </div>
     </body>
