@@ -187,114 +187,99 @@ def index():
     )
     graph_html = fig.to_html(full_html=False, config={'displayModeBar': False}, include_plotlyjs='cdn')
     
-    html_template = """
-# In your app.py file, find the html_template variable and REPLACE it with this:
+# --- START: REPLACE YOUR OLD HTML_TEMPLATE WITH THIS ---
 
-html_template = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- 1. LINK TO YOUR MAIN WEBSITE'S STYLESHEET -->
-    <!-- IMPORTANT: Make sure this URL is the correct path to your live CSS file. -->
-    <link rel="stylesheet" href="https://thequantumfamily.com/style.css">
-    
-    <!-- This ensures that if any links are clicked, they open in the main tab, not within the iframe -->
-    <base target="_parent">
+    # We are using a raw f-string (fr) to prevent syntax errors.
+    html_template = fr"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://thequantumfamily.com/style.css">
+        <base target="_parent">
+        <style>
+            body {{
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                max-width: none;
+                background: none;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="content-box reveal-box">
+            <h1>{{{{ role }}}}!!</h1>
+            <h2>Congratulations!</h2>
+            <p>Your survey suggests the {{{{ details.game_name }}}}.</p>
+        </div>
 
-    <!-- 2. MINIMAL STYLE OVERRIDES -->
-    <!-- This ensures the iframe itself has no unwanted background or spacing. -->
-    <style>
-        body { 
-            background-color: transparent; /* Makes the iframe background invisible */
-            margin: 0;
-            padding: 0;
-            /* The font will be inherited from your main stylesheet */
-        }
-        /* This prevents a "container-inside-a-container" look which can cause double padding */
-        .container {
-            padding: 0;
-            margin: 0;
-            box-shadow: none;
-            max-width: none;
-        }
-    </style>
-</head>
-<body>
-    <!-- 3. REMOVED THE OUTER CONTAINER DIV -->
-    <!-- The content now begins directly, as the parent page already provides the main container. -->
+        <p>In a growth game like TwoFish, your suggested starting point is the role of {{{{ role }}}} in the {{{{ details.game_name }}}}. {{{{ details.definition }}}}</p>
 
-    <div class="content-box reveal-box">
-        <h1>{{ role }}!!</h1>
-        <h2>Congratulations!</h2>
-        <p>Your survey suggests the {{ details.game_name }}.</p>
-    </div>
+        <div class="strengths-container">
+            <div class="strength-item"><h4>Freedom (F = {{{{ f_score }}}})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{{{ (f_score / 5) * 100 }}}}%;"></div></div></div>
+            <div class="strength-item"><h4>Security (S = {{{{ s_score }}}})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{{{ (s_score / 5) * 100 }}}}%;"></div></div></div>
+            <div class="strength-item"><h4>Responsibility (R = {{{{ r_score }}}})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{{{ (r_score / 5) * 100 }}}}%;"></div></div></div>
+        </div>
 
-    <p>In a growth game like TwoFish, your suggested starting point is the role of {{ role }} in the {{ details.game_name }}. {{ details.definition }}</p>
+        <div class="content-box">
+            <h3 style="margin-top:0;">What your choices revealed.</h3>
+            <p style="margin-bottom:0;">{{{{ details.game_description }}}}</p>
+        </div>
 
-    <div class="strengths-container">
-        <div class="strength-item"><h4>Freedom (F = {{ f_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (f_score / 5) * 100 }}%;"></div></div></div>
-        <div class="strength-item"><h4>Security (S = {{ s_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (s_score / 5) * 100 }}%;"></div></div></div>
-        <div class="strength-item"><h4>Responsibility (R = {{ r_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (r_score / 5) * 100 }}%;"></div></div></div>
-    </div>
-
-    <div class="content-box">
-        <h3 style="margin-top:0;">What your choices revealed.</h3>
-        <p style="margin-bottom:0;">{{ details.game_description }}</p>
-    </div>
-
-    <div class="visual-insights-container">
-        <div class="top-row">
-            <div class="info-box visual-column">
-                <h3 style="margin-top:0;">The space you need to grow.</h3>
-                <div class="graph-container">{{ graph_html | safe }}</div>
-                <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
+        <div class="visual-insights-container">
+            <div class="top-row">
+                <div class="info-box visual-column">
+                    <h3 style="margin-top:0;">The space you need to grow.</h3>
+                    <div class="graph-container">{{{{ graph_html | safe }}}}</div>
+                    <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
+                </div>
+                <div class="info-box insights-column profile-section">
+                    <h3>Diagnostic Insights</h3>
+                    {{% for key, value in details.profile.items() %}}
+                        <h4>{{{{ key }}}}</h4>
+                        <p>{{{{ value }}}}</p>
+                    {{% endfor %}}
+                </div>
             </div>
-            <div class="info-box insights-column profile-section">
-                <h3>Diagnostic Insights</h3>
-                {% for key, value in details.profile.items() %}
-                    <h4>{{ key }}</h4>
-                    <p>{{ value }}</p>
-                {% endfor %}
+            <div class="bottom-row">
+                <div class="info-box characteristics-box profile-section">
+                    <h3>Role characteristics</h3>
+                    <ul>
+                    {{% for item in details.bullets %}}
+                        <li>{{{{ item }}}}</li>
+                    {{% endfor %}}
+                    </ul>
+                </div>
+                <div class="info-box leadership-box profile-section">
+                    <h3>Leadership style</h3>
+                    <p>{{{{ details.leadership_title }}}}</p>
+                </div>
             </div>
         </div>
-        <div class="bottom-row">
-            <div class="info-box characteristics-box profile-section">
-                <h3>Role characteristics</h3>
-                <ul>
-                {% for item in details.bullets %}
-                    <li>{{ item }}</li>
-                {% endfor %}
-                </ul>
-            </div>
-            <div class="info-box leadership-box profile-section">
-                <h3>Leadership style</h3>
-                <p>{{ details.leadership_title }}</p>
-            </div>
-        </div>
-    </div>
 
-    <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
-    
-    <!-- NOTE: This content is likely duplicated on your main HTML page. -->
-    <!-- Consider removing it from here to avoid showing it twice. -->
-    <h3>The Journey Ahead</h3>
-    <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
-    
-    <a href="#" class="cta-button">Validate results & receive paper.</a>
-    
-    <!-- SCRIPT FOR DYNAMIC IFRAME RESIZING (Keep this) -->
-    <script>
-        window.onload = function() {
-            var height = document.body.scrollHeight;
-            parent.postMessage(height, "https://thequantumfamily.com");
-        };
-    </script>
-</body>
-</html>
-"""
+        <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
+        
+        <h3>The Journey Ahead</h3>
+        <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
+        <a href="#" class="cta-button">Validate results & receive paper.</a>
+        
+        <script>
+            window.onload = function() {{
+                var height = document.body.scrollHeight;
+                parent.postMessage(height, "https://thequantumfamily.com");
+            }};
+        </script>
+    </body>
+    </html>
+    """
+# --- END: REPLACEMENT BLOCK ---
     return render_template_string(
         html_template, user_id=user_id, role=role, f_score=f_score, s_score=s_score, r_score=r_score, details=details, graph_html=graph_html
     )
