@@ -187,105 +187,85 @@ def index():
     )
     graph_html = fig.to_html(full_html=False, config={'displayModeBar': False}, include_plotlyjs='cdn')
     
-# --- START: REPLACE YOUR OLD HTML_TEMPLATE WITH THIS ---
+    # This HTML template ONLY contains the results content.
+    # It will be inserted into your main website's page.
+    html_template = """
+    <!-- This is the content block that will be inserted into your main HTML page. -->
+    <!-- It has no header, footer, or body tags. -->
 
-    # We are using a raw f-string (fr) to prevent syntax errors.
-    html_template = fr"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://thequantumfamily.com/style.css">
-        <base target="_parent">
-        <style>
-            body {{
-                background-color: transparent;
-                margin: 0;
-                padding: 0;
-            }}
-            .container {{
-                padding: 0;
-                margin: 0;
-                box-shadow: none;
-                max-width: none;
-                background: none;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="content-box reveal-box">
-            <h1>{{{{ role }}}}!!</h1>
-            <h2>Congratulations!</h2>
-            <p>Your survey suggests the {{{{ details.game_name }}}}.</p>
-        </div>
+    <div class="content-box reveal-box">
+        <h1>{{ role }}!!</h1>
+        <h2>Congratulations!</h2>
+        <p>Your survey suggests the {{ details.game_name }}.</p>
+    </div>
 
-        <p>In a growth game like TwoFish, your suggested starting point is the role of {{{{ role }}}} in the {{{{ details.game_name }}}}. {{{{ details.definition }}}}</p>
+    <p>In a growth game like TwoFish, your suggested starting point is the role of {{ role }} in the {{ details.game_name }}. {{ details.definition }}</p>
 
-        <div class="strengths-container">
-            <div class="strength-item"><h4>Freedom (F = {{{{ f_score }}}})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{{{ (f_score / 5) * 100 }}}}%;"></div></div></div>
-            <div class="strength-item"><h4>Security (S = {{{{ s_score }}}})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{{{ (s_score / 5) * 100 }}}}%;"></div></div></div>
-            <div class="strength-item"><h4>Responsibility (R = {{{{ r_score }}}})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{{{ (r_score / 5) * 100 }}}}%;"></div></div></div>
-        </div>
+    <div class="strengths-container">
+        <div class="strength-item"><h4>Freedom (F = {{ f_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (f_score / 5) * 100 }}%;"></div></div></div>
+        <div class="strength-item"><h4>Security (S = {{ s_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (s_score / 5) * 100 }}%;"></div></div></div>
+        <div class="strength-item"><h4>Responsibility (R = {{ r_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (r_score / 5) * 100 }}%;"></div></div></div>
+    </div>
 
-        <div class="content-box">
-            <h3 style="margin-top:0;">What your choices revealed.</h3>
-            <p style="margin-bottom:0;">{{{{ details.game_description }}}}</p>
-        </div>
+    <div class="content-box">
+        <h3 style="margin-top:0;">What your choices revealed.</h3>
+        <p style="margin-bottom:0;">{{ details.game_description }}</p>
+    </div>
 
-        <div class="visual-insights-container">
-            <div class="top-row">
-                <div class="info-box visual-column">
-                    <h3 style="margin-top:0;">The space you need to grow.</h3>
-                    <div class="graph-container">{{{{ graph_html | safe }}}}</div>
-                    <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
-                </div>
-                <div class="info-box insights-column profile-section">
-                    <h3>Diagnostic Insights</h3>
-                    {{% for key, value in details.profile.items() %}}
-                        <h4>{{{{ key }}}}</h4>
-                        <p>{{{{ value }}}}</p>
-                    {{% endfor %}}
-                </div>
+    <div class="visual-insights-container">
+        <div class="top-row">
+            <div class="info-box visual-column">
+                <h3 style="margin-top:0;">The space you need to grow.</h3>
+                <div class="graph-container">{{ graph_html | safe }}</div>
+                <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
             </div>
-            <div class="bottom-row">
-                <div class="info-box characteristics-box profile-section">
-                    <h3>Role characteristics</h3>
-                    <ul>
-                    {{% for item in details.bullets %}}
-                        <li>{{{{ item }}}}</li>
-                    {{% endfor %}}
-                    </ul>
-                </div>
-                <div class="info-box leadership-box profile-section">
-                    <h3>Leadership style</h3>
-                    <p>{{{{ details.leadership_title }}}}</p>
-                </div>
+            <div class="info-box insights-column profile-section">
+                <h3>Diagnostic Insights</h3>
+                {% for key, value in details.profile.items() %}
+                    <h4>{{ key }}</h4>
+                    <p>{{ value }}</p>
+                {% endfor %}
             </div>
         </div>
+        <div class="bottom-row">
+            <div class="info-box characteristics-box profile-section">
+                <h3>Role characteristics</h3>
+                <ul>
+                {% for item in details.bullets %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div class="info-box leadership-box profile-section">
+                <h3>Leadership style</h3>
+                <p>{{ details.leadership_title }}</p>
+            </div>
+        </div>
+    </div>
 
-        <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
-        
-        <h3>The Journey Ahead</h3>
-        <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
-        <a href="#" class="cta-button">Validate results & receive paper.</a>
-        
-        <script>
-            window.onload = function() {{
-                var height = document.body.scrollHeight;
-                parent.postMessage(height, "https://thequantumfamily.com");
-            }};
-        </script>
-    </body>
-    </html>
+    <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
+
+    <!-- SCRIPT FOR DYNAMIC IFRAME RESIZING -->
+    <!-- This script calculates the height of the content above and sends it to the parent page. -->
+    <script>
+        window.onload = function() {
+            // Use scrollHeight to get the true height of all content
+            var height = document.documentElement.scrollHeight;
+            
+            // Send the height value to the parent window (your main HTML page)
+            // SECURITY: The second argument ensures we only send this message to your website.
+            parent.postMessage(height, "https://thequantumfamily.com");
+        };
+    </script>
     """
-# --- END: REPLACEMENT BLOCK ---
+    
     return render_template_string(
         html_template, user_id=user_id, role=role, f_score=f_score, s_score=s_score, r_score=r_score, details=details, graph_html=graph_html
     )
 
 @app.after_request
 def add_headers(response):
+    # These headers are crucial for allowing your main site to embed this content.
     response.headers["X-Frame-Options"] = "ALLOW-FROM https://thequantumfamily.com"
     response.headers["Content-Security-Policy"] = "frame-ancestors https://thequantumfamily.com"
     return response
