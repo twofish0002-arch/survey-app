@@ -4,28 +4,12 @@ import numpy as np
 import plotly.graph_objects as go
 import os
 import json
-import gspread
-from google.oauth2.service_account import Credentials
+import requests # The new tool we are using
 
 app = Flask(__name__)
 
-# --- FINAL, ROBUST Google Sheets setup (Works Locally and on Render) ---
-gc = None
-try:
-    if os.path.exists("credentials.json"):
-        # Use the local file if it exists (for local testing)
-        gc = gspread.service_account(filename="credentials.json")
-        print("--- Authorized using local credentials.json file. ---")
-    elif "GOOGLE_CREDENTIALS" in os.environ:
-        # Use the environment variable if on Render
-        service_account_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
-        creds = Credentials.from_service_account_info(service_account_info)
-        gc = gspread.authorize(creds)
-        print("--- Authorized using GOOGLE_CREDENTIALS environment variable. ---")
-    else:
-        print("!!! ERROR: No credentials found in file or environment variables. !!!")
-except Exception as e:
-    print(f"!!! ERROR: An error occurred during authorization: {e} !!!")
+# --- NEW: SheetDB API Setup ---
+SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 
 
 # --- Final, Leadership-Focused Role Content ---
@@ -135,17 +119,17 @@ radii = [0, 0.5, 1, 1.5, 2, 2.5]
 
 @app.route("/")
 def index():
-    if not gc:
-        return "Application not configured. Please check the terminal output for ERROR messages to see why."
-
     try:
-        sheet = gc.open_by_key("1JoZ5gXl6Dk7NlZOUDEwFGx9EUxyKrNWFLi7AVLgZASg").sheet1
-        df = pd.DataFrame(sheet.get_all_records())
+        # --- NEW: Fetch data from SheetDB API ---
+        response = requests.get(SHEETDB_URL)
+        response.raise_for_status() # This will raise an error for bad responses (4xx or 5xx)
+        data = response.json()
+        df = pd.DataFrame(data)
         df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
-    except gspread.exceptions.SpreadsheetNotFound:
-        return "Error: Spreadsheet not found. Check the key and permissions."
+    except requests.exceptions.RequestException as e:
+        return f"An error occurred while fetching data from the API: {e}"
     except Exception as e:
-        return f"An error occurred while accessing Google Sheets: {e}"
+        return f"An error occurred while processing the data: {e}"
 
     user_id = request.args.get("user_id")
     if not user_id:

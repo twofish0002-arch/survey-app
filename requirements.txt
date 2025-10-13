@@ -1,8 +1,5 @@
-flask
-gunicorn
-gspread
-google-auth
+Flask
 pandas
 numpy
 plotly
-
+requests
