@@ -9,17 +9,26 @@ from google.oauth2.service_account import Credentials
 
 app = Flask(__name__)
 
-# --- Final, Corrected Google Sheets setup ---
+# --- FINAL, ROBUST Google Sheets setup (Works Locally and on Render) ---
 gc = None
 try:
-    gc = gspread.service_account(filename="credentials.json")
-except FileNotFoundError:
-    print("!!! ERROR: 'credentials.json' not found. Please make sure the file is in the same folder. !!!")
+    if os.path.exists("credentials.json"):
+        # Use the local file if it exists (for local testing)
+        gc = gspread.service_account(filename="credentials.json")
+        print("--- Authorized using local credentials.json file. ---")
+    elif "GOOGLE_CREDENTIALS" in os.environ:
+        # Use the environment variable if on Render
+        service_account_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+        creds = Credentials.from_service_account_info(service_account_info)
+        gc = gspread.authorize(creds)
+        print("--- Authorized using GOOGLE_CREDENTIALS environment variable. ---")
+    else:
+        print("!!! ERROR: No credentials found in file or environment variables. !!!")
 except Exception as e:
     print(f"!!! ERROR: An error occurred during authorization: {e} !!!")
 
 
-# --- Final, Leadership-Focused Role Content with All Text Updates ---
+# --- Final, Leadership-Focused Role Content ---
 role_details = {
     "Scholar": {
         "leadership_title": "As an academic leader, you enjoy teaching others and showing them what’s real and worth knowing.",
@@ -28,7 +37,7 @@ role_details = {
         "game_description": "Your profile suggests a preference for clear guidance and a world of knowns, allowing you to master a subject with precision. The Academic Game matches this perfectly. It gives you a mentor-led path where you can ask and resolve 'What's this?' questions, focus your attention on a single, deep line of inquiry, and have the space to precisely curate and understand existing knowledge.",
         "bullets": ["Asks questions", "Seeks truth", "Dislikes rushing", "Studies deeply", "Shares knowledge"],
         "profile": {
-            "What excites youWhat excites you??": "Asking big questions and finding answers.",
+            "What makes you excited?": "Asking big questions and finding answers.",
             "What matters?": "Clear thinking, careful work, and learning.",
             "A great day looks like…": "You wake up with a puzzle in your head. You spend hours reading, testing, and writing until the answer starts to shine.",
             "What you don’t like…": "Being rushed to finish before you’re ready.",
@@ -42,7 +51,7 @@ role_details = {
         "game_description": "Your profile suggests you thrive within a trusted community with clear rules, where you can take on and manage important tasks for the group. The Neoclassical Game matches this perfectly. It provides clear institutional boundaries where you can ask and resolve 'Can I?' questions, focus your attention on improving systems and processes that serve the entire community.",
         "bullets": ["Helps others", "Keeps order", "Dislikes chaos", "Builds trust", "Bonds groups"],
         "profile": {
-            "What excites you?": "Helping people feel safe, welcome, and treated fairly.",
+            "What makes you excited?": "Helping people feel safe, welcome, and treated fairly.",
             "What matters?": "Rules, fairness, and making sure groups stay connected.",
             "A great day looks like…": "You quietly make sure everyone has what they need. By the end, the group has worked well together because of you.",
             "What you don’t like…": "Chaos, unfairness, or people breaking promises.",
@@ -56,7 +65,7 @@ role_details = {
         "game_description": "Your profile suggests a desire for clear objectives and the freedom to solve real problems, balancing knowns and unknowns. The Progressive Game matches this perfectly. It gives you a clear path to follow, where the directive is \"I must.\" It allows you to focus your attention on a predictable schedule and provides the opportunity to master given material with precision.",
         "bullets": ["Solves problems", "Wants results", "Dislikes worksheets", "Builds with team", "Makes ideas real"],
         "profile": {
-            "What excites you?": "Solving problems with tools and teamwork.",
+            "What makes you excited?": "Solving problems with tools and teamwork.",
             "What matters?": "Making things that work and last.",
             "A great day looks like…": "You carefully decide who to serve and which problem to solve. You test, fix, and by the end, you can proudly say, “It works!”",
             "What you don’t like…": "Endless worksheets that don’t matter in real life.",
@@ -70,7 +79,7 @@ role_details = {
         "game_description": "Your profile suggests a high level of self-trust and a comfort with the unknown, along with a strong desire to take ownership of your own ideas and their outcomes. The Neotraditional Game matches this perfectly. It gives you full control to ask and resolve 'What if?' questions, focus your attention on a wide-open space for experimentation, and have the permission to create new value from your own vision.",
         "bullets": ["Chases ideas", "Breaks rules", "Dislikes limits", "Takes risks", "Sees future"],
         "profile": {
-            "What excites you?": "Chasing big ideas and trying new things.",
+            "What makes you excited?": "Chasing big ideas and trying new things.",
             "What matters?": "Freedom to experiment and taking risks.",
             "A great day looks like…": "A spark hits: you sketch, test, and tinker until your idea begins to take shape.",
             "What you don’t like…": "Being stuck in rules that stop you from exploring.",
@@ -80,11 +89,11 @@ role_details = {
     "Artist": {
         "leadership_title": "As a philosophical leader, you enjoy exploring boundaries and expressing meaning, beauty, and truth.",
         "game_name": "Democratic Game",
-        "definition": "An artist is an individual who creates value by exploring, expressing and giving form to the unknown. Driven by the ultimate question, “Why?”, their leadership strength is serving as a moral and aesthetic compass for society, creating works that connect us to beauty and eternal truths.",
+        "definition": "An artist is an individual who creates value by exploring authenticity and giving form to the unknown. Driven by the ultimate question, “Why?”, their leadership strength is serving as a moral and aesthetic compass for society, creating works that connect us to beauty and eternal truths.",
         "game_description": "Your profile suggests a deep trust in your own intuition and a need for unstructured freedom, where you are the ultimate judge of your own work. The Democratic Game matches this perfectly. It provides a blank canvas with near-total control where you can ask and resolve 'Why?' questions, direct your own attention without external goals, and have the freedom to create something based on your own standard of authentic expression.",
         "bullets": ["Creates freely", "Loves beauty", "Dislikes rules", "Shares feelings", "Shows meaning"],
         "profile": {
-            "What excites you?": "Drawing, singing, writing, or creating something new.",
+            "What makes you excited?": "Drawing, singing, writing, or creating something new.",
             "What matters?": "Freedom, beauty, and sharing your heart.",
             "A great day looks like…": "A picture, sound, or feeling comes to you. You follow it until it becomes real, then share it with others.",
             "What you don’t like…": "Being told there’s only one right way to do things.",
@@ -98,7 +107,7 @@ role_details = {
         "game_description": "Your profile suggests a need for a safe, predictable environment with clear, step-by-step guidance, where success comes from following instructions perfectly. The Standardised Game matches this perfectly. It gives you a clear path to follow, where the directive is 'I must,' allows you to focus your attention on a predictable schedule, and provides the opportunity to master given material with precision.",
         "bullets": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"],
         "profile": {
-            "What excites you?": "Doing the task exactly right and getting approval.",
+            "What makes you excited?": "Doing the task exactly right and getting approval.",
             "What matters?": "Safety, clear instructions, and meeting expectations.",
             "A great day looks like…": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick.",
             "What you don’t like…": "Uncertainty, unclear instructions, or self-direction.",
@@ -267,7 +276,7 @@ def index():
                     </div>
                     <div class="info-box insights-column profile-section">
                         <h3>Diagnostic Insights</h3>
-                        {% for key, value in details.profile.items() if key != 'Leadership style' %}
+                        {% for key, value in details.profile.items() %}
                             <h4>{{ key }}</h4>
                             <p>{{ value }}</p>
                         {% endfor %}
@@ -292,7 +301,7 @@ def index():
             <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
             
             <h3>The Journey Ahead</h3>
-            <p>The role of a Pupil ends the day school ends. TwoFish trains children to be value creators, leaders in the Free Market Economy, and the Spatial Indicator (SI) tool reveals which of the five roles is the best place to begin. To learn more about TwoFish and The Quantum Family, validate your results and receive the full story behind the tool and the game.</p>
+            <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
             
             <a href="#" class="cta-button">Validate results & receive paper.</a>
         </div>
