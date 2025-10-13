@@ -4,11 +4,11 @@ import numpy as np
 import plotly.graph_objects as go
 import os
 import json
-import requests # The new tool we are using
+import requests
 
 app = Flask(__name__)
 
-# --- NEW: SheetDB API Setup ---
+# --- Final, Corrected API Setup ---
 SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 
 
@@ -120,9 +120,8 @@ radii = [0, 0.5, 1, 1.5, 2, 2.5]
 @app.route("/")
 def index():
     try:
-        # --- NEW: Fetch data from SheetDB API ---
         response = requests.get(SHEETDB_URL)
-        response.raise_for_status() # This will raise an error for bad responses (4xx or 5xx)
+        response.raise_for_status()
         data = response.json()
         df = pd.DataFrame(data)
         df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
@@ -133,11 +132,11 @@ def index():
 
     user_id = request.args.get("user_id")
     if not user_id:
-        return "Please provide ?user_id=your_email in the URL to see your results."
+        return "<p style='color:red; text-align:center;'>No user_id provided in the URL.</p>"
 
     user_rows = df[df['user_id'] == user_id]
     if user_rows.empty:
-        return f"Sorry, no results were found for the user ID: {user_id}"
+        return f"<p style='color:red; text-align:center;'>No results found for user: {user_id}</p>"
 
     latest = user_rows.iloc[-1]
     
@@ -199,8 +198,6 @@ def index():
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; text-align: center; }
             .container { max-width: 900px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 40px; }
             p { font-size: 1.1em; line-height: 1.7; color: #555; text-align: left; }
-            .cta-button { display: inline-block; background-color: #e7f3ff; color: #0056b3; border: 1px solid #b8d9f7; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s; }
-            .cta-button:hover { background-color: #d0e7ff; }
             .content-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px 30px; margin-bottom: 25px; }
             .reveal-box h1 { font-size: 3em; margin: 0 0 10px 0; color: #2c3e50; }
             .reveal-box h2 { font-size: 1.5em; margin: 0; color: #2c3e50; font-weight: normal; }
@@ -287,7 +284,6 @@ def index():
             <h3>The Journey Ahead</h3>
             <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
             
-            <a href="#" class="cta-button">Validate results & receive paper.</a>
         </div>
     </body>
     </html>
