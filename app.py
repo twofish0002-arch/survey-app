@@ -4,15 +4,15 @@ import numpy as np
 import plotly.graph_objects as go
 import os
 import json
-import requests
+import requests # The new tool we are using
 
 app = Flask(__name__)
 
-# --- FINAL, ROBUST API Setup (Works Everywhere) ---
+# --- NEW: SheetDB API Setup ---
 SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 
 
-# --- Final, Leadership-Focused Role Content with All Text Updates ---
+# --- Final, Leadership-Focused Role Content ---
 role_details = {
     "Scholar": {
         "leadership_title": "As an academic leader, you enjoy teaching others and showing them what’s real and worth knowing.",
@@ -120,8 +120,9 @@ radii = [0, 0.5, 1, 1.5, 2, 2.5]
 @app.route("/")
 def index():
     try:
+        # --- NEW: Fetch data from SheetDB API ---
         response = requests.get(SHEETDB_URL)
-        response.raise_for_status()
+        response.raise_for_status() # This will raise an error for bad responses (4xx or 5xx)
         data = response.json()
         df = pd.DataFrame(data)
         df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
@@ -132,11 +133,11 @@ def index():
 
     user_id = request.args.get("user_id")
     if not user_id:
-        return "<p style='color:red; text-align:center;'>No user_id provided in the URL.</p>"
+        return "Please provide ?user_id=your_email in the URL to see your results."
 
     user_rows = df[df['user_id'] == user_id]
     if user_rows.empty:
-        return f"<p style='color:red; text-align:center;'>No results found for user: {user_id}</p>"
+        return f"Sorry, no results were found for the user ID: {user_id}"
 
     latest = user_rows.iloc[-1]
     
@@ -187,46 +188,110 @@ def index():
     )
     graph_html = fig.to_html(full_html=False, config={'displayModeBar': False}, include_plotlyjs='cdn')
     
-    # This is the final, cleaned HTML template. It ONLY contains the results content.
     html_template = """
-    <!-- Final content block. Does not include "Validate" button or "Journey Ahead" text. -->
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Survey Results</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; text-align: center; }
+            .container { max-width: 900px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 40px; }
+            p { font-size: 1.1em; line-height: 1.7; color: #555; text-align: left; }
+            .cta-button { display: inline-block; background-color: #e7f3ff; color: #0056b3; border: 1px solid #b8d9f7; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s; }
+            .cta-button:hover { background-color: #d0e7ff; }
+            .content-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px 30px; margin-bottom: 25px; }
+            .reveal-box h1 { font-size: 3em; margin: 0 0 10px 0; color: #2c3e50; }
+            .reveal-box h2 { font-size: 1.5em; margin: 0; color: #2c3e50; font-weight: normal; }
+            .reveal-box p { font-size: 1.2em; margin: 0; color: #2c3e50; text-align: center; }
+            
+            .strengths-container { display: flex; justify-content: space-between; gap: 30px; margin: 40px 0 25px 0; flex-wrap: wrap; }
+            .strength-item { flex-grow: 1; flex-basis: 200px; text-align: left; }
+            .strength-item h4 { margin-bottom: 8px; font-size: 1.1em; font-weight: 600; color: #2c3e50; }
+            .bar-bg { background-color: #e9ecef; border-radius: 8px; height: 24px; overflow: hidden; }
+            .bar-fill { background-color: #007bff; height: 100%; border-radius: 8px; }
 
-    <div class="content-box reveal-box">
-        <h1>{{ role }}!!</h1>
-        <h2>Congratulations!</h2>
-        <p>Your survey suggests the {{ details.game_name }}.</p>
-    </div>
+            .visual-insights-container { display: flex; flex-direction: column; gap: 25px; }
+            .top-row, .bottom-row { display: flex; flex-wrap: wrap; gap: 25px; }
+            .info-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px; text-align: left; overflow: hidden; }
+            
+            .visual-column { flex: 1.5; min-width: 350px; }
+            .insights-column { flex: 1; min-width: 300px; }
+            .characteristics-box { flex: 1.5; }
+            .leadership-box { flex: 1; }
 
-    <p style="text-align: left;">In a growth game like TwoFish, your suggested starting point is the role of {{ role }} in the {{ details.game_name }}. {{ details.definition }}</p>
-    
-    <div class="strengths-container">
-        <div class="strength-item"><h4>Freedom (F = {{ f_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (f_score / 5) * 100 }}%;"></div></div></div>
-        <div class="strength-item"><h4>Security (S = {{ s_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (s_score / 5) * 100 }}%;"></div></div></div>
-        <div class="strength-item"><h4>Responsibility (R = {{ r_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (r_score / 5) * 100 }}%;"></div></div></div>
-    </div>
+            .profile-section h3 { margin-top: 0; color: #2c3e50; }
+            .profile-section ul { list-style-type: '✓  '; padding-left: 20px; font-size: 1.1em; margin-top: 10px; }
+            .profile-section li { margin-bottom: 12px; }
+            .profile-section h4 { color: #0056b3; font-size: 1.1em; font-weight: 600; margin-top: 20px; margin-bottom: 5px; }
+            .profile-section p { margin-top: 0; }
+            .graph-container { width: 100%; height: 450px; display: flex; justify-content: center; align-items: center; }
+            .visual-note { font-size: 0.9em; text-align: center; color: #6c757d; margin-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="content-box reveal-box">
+                <h1>{{ role }}!!</h1>
+                <h2>Congratulations!</h2>
+                <p>Your survey suggests the {{ details.game_name }}.</p>
+            </div>
 
-    <div class="content-box">
-        <h3 style="margin-top:0; text-align: left;">What your choices revealed.</h3>
-        <p style="margin-bottom:0;">{{ details.game_description }}</p>
-    </div>
+            <p>In a growth game like TwoFish, your suggested starting point is the role of {{ role }} in the {{ details.game_name }}. {{ details.definition }}</p>
 
-    <h3 style="text-align: left;">The space you need to grow.</h3>
-    <div class="info-box visual-column" style="margin: 0 auto;"> <!-- Centering the visual box -->
-        <div class="graph-container">{{ graph_html | safe }}</div>
-        <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
-    </div>
+            <div class="strengths-container">
+                <div class="strength-item"><h4>Freedom (F = {{ f_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (f_score / 5) * 100 }}%;"></div></div></div>
+                <div class="strength-item"><h4>Security (S = {{ s_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (s_score / 5) * 100 }}%;"></div></div></div>
+                <div class="strength-item"><h4>Responsibility (R = {{ r_score }})</h4><div class="bar-bg"><div class="bar-fill" style="width:{{ (r_score / 5) * 100 }}%;"></div></div></div>
+            </div>
 
-    <!-- All other content from the original screenshot has been removed -->
-    <!-- as it belongs in the main HTML file. -->
+            <div class="content-box">
+                <h3 style="margin-top:0;">What your choices revealed.</h3>
+                <p style="margin-bottom:0;">{{ details.game_description }}</p>
+            </div>
 
-    <script>
-        window.onload = function() {
-            var height = document.documentElement.scrollHeight;
-            parent.postMessage(height, "https://thequantumfamily.com");
-        };
-    </script>
+            <div class="visual-insights-container">
+                <div class="top-row">
+                    <div class="info-box visual-column">
+                        <h3 style="margin-top:0;">The space you need to grow.</h3>
+                        <div class="graph-container">{{ graph_html | safe }}</div>
+                        <p class="visual-note">The grey sphere indicates the space a pupil is permitted to occupy.</p>
+                    </div>
+                    <div class="info-box insights-column profile-section">
+                        <h3>Diagnostic Insights</h3>
+                        {% for key, value in details.profile.items() %}
+                            <h4>{{ key }}</h4>
+                            <p>{{ value }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="bottom-row">
+                    <div class="info-box characteristics-box profile-section">
+                        <h3>Role characteristics</h3>
+                        <ul>
+                        {% for item in details.bullets %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="info-box leadership-box profile-section">
+                        <h3>Leadership style</h3>
+                        <p>{{ details.leadership_title }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px;">Based on your choices, this is the foundational role your child is likely to begin with in a growth game like TwoFish. It's not their final role; it's just their starting point, a place where they can feel confident and successful from day one. As they grow, they can try any role or combine them. In fact, that's what the most successful adults do. We call them "Multigame Players."</p>
+            
+            <h3>The Journey Ahead</h3>
+            <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
+            
+            <a href="#" class="cta-button">Validate results & receive paper.</a>
+        </div>
+    </body>
+    </html>
     """
-    
     return render_template_string(
         html_template, user_id=user_id, role=role, f_score=f_score, s_score=s_score, r_score=r_score, details=details, graph_html=graph_html
     )
