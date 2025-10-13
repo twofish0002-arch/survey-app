@@ -4,11 +4,11 @@ import numpy as np
 import plotly.graph_objects as go
 import os
 import json
-import requests # The new tool we are using
+import requests
 
 app = Flask(__name__)
 
-# --- NEW: SheetDB API Setup ---
+# --- Final, Corrected API Setup ---
 SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 
 
@@ -120,9 +120,8 @@ radii = [0, 0.5, 1, 1.5, 2, 2.5]
 @app.route("/")
 def index():
     try:
-        # --- NEW: Fetch data from SheetDB API ---
         response = requests.get(SHEETDB_URL)
-        response.raise_for_status() # This will raise an error for bad responses (4xx or 5xx)
+        response.raise_for_status()
         data = response.json()
         df = pd.DataFrame(data)
         df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
@@ -133,11 +132,14 @@ def index():
 
     user_id = request.args.get("user_id")
     if not user_id:
-        return "Please provide ?user_id=your_email in the URL to see your results."
+        # If no user_id, render a simple error page with the full site template
+        error_html = render_template_string(html_template, role="Error", details=None, f_score=0, s_score=0, r_score=0, graph_html="<p style='color:red; text-align:center;'>No user_id provided in the URL.</p>")
+        return error_html
 
     user_rows = df[df['user_id'] == user_id]
     if user_rows.empty:
-        return f"Sorry, no results were found for the user ID: {user_id}"
+        error_html = render_template_string(html_template, role="Error", details=None, f_score=0, s_score=0, r_score=0, graph_html=f"<p style='color:red; text-align:center;'>No results found for user: {user_id}</p>")
+        return error_html
 
     latest = user_rows.iloc[-1]
     
@@ -178,60 +180,77 @@ def index():
     
     fig.update_layout(
         autosize=True,
-        scene=dict(
-            xaxis=dict(visible=False), 
-            yaxis=dict(visible=False), 
-            zaxis=dict(visible=False), 
-            camera=dict(eye=dict(x=1.5, y=1.5, z=1.5))
-        ), 
+        scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False), camera=dict(eye=dict(x=1.5, y=1.5, z=1.5))), 
         margin=dict(l=0, r=0, b=0, t=0)
     )
     graph_html = fig.to_html(full_html=False, config={'displayModeBar': False}, include_plotlyjs='cdn')
     
+    # --- THIS IS THE NEW, FULLY INTEGRATED HTML TEMPLATE ---
     html_template = """
     <!DOCTYPE html>
     <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your Survey Results</title>
-        <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; text-align: center; }
-            .container { max-width: 900px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 40px; }
-            p { font-size: 1.1em; line-height: 1.7; color: #555; text-align: left; }
-            .cta-button { display: inline-block; background-color: #e7f3ff; color: #0056b3; border: 1px solid #b8d9f7; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s; }
-            .cta-button:hover { background-color: #d0e7ff; }
-            .content-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px 30px; margin-bottom: 25px; }
-            .reveal-box h1 { font-size: 3em; margin: 0 0 10px 0; color: #2c3e50; }
-            .reveal-box h2 { font-size: 1.5em; margin: 0; color: #2c3e50; font-weight: normal; }
-            .reveal-box p { font-size: 1.2em; margin: 0; color: #2c3e50; text-align: center; }
-            
-            .strengths-container { display: flex; justify-content: space-between; gap: 30px; margin: 40px 0 25px 0; flex-wrap: wrap; }
-            .strength-item { flex-grow: 1; flex-basis: 200px; text-align: left; }
-            .strength-item h4 { margin-bottom: 8px; font-size: 1.1em; font-weight: 600; color: #2c3e50; }
-            .bar-bg { background-color: #e9ecef; border-radius: 8px; height: 24px; overflow: hidden; }
-            .bar-fill { background-color: #007bff; height: 100%; border-radius: 8px; }
+      <meta charset="UTF-8">
+      <title>Your Survey Result – The Quantum Family</title>
+      <link rel="stylesheet" href="https://thequantumfamily.com/style.css">
+      <style>
+        /* Styles from your Python App */
+        .container { max-width: 900px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 40px; }
+        p { font-size: 1.1em; line-height: 1.7; color: #555; text-align: left; }
+        .cta-button { display: inline-block; background-color: #e7f3ff; color: #0056b3; border: 1px solid #b8d9f7; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.1em; margin-top: 20px; transition: background-color 0.3s; }
+        .cta-button:hover { background-color: #d0e7ff; }
+        .content-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px 30px; margin-bottom: 25px; }
+        .reveal-box h1 { font-size: 3em; margin: 0 0 10px 0; color: #2c3e50; text-align: center; }
+        .reveal-box h2 { font-size: 1.5em; margin: 0; color: #2c3e50; font-weight: normal; text-align: center; }
+        .reveal-box p { font-size: 1.2em; margin: 0; color: #2c3e50; text-align: center; }
+        
+        .strengths-container { display: flex; justify-content: space-between; gap: 30px; margin: 40px 0 25px 0; flex-wrap: wrap; }
+        .strength-item { flex-grow: 1; flex-basis: 200px; text-align: left; }
+        .strength-item h4 { margin-bottom: 8px; font-size: 1.1em; font-weight: 600; color: #2c3e50; }
+        .bar-bg { background-color: #e9ecef; border-radius: 8px; height: 24px; overflow: hidden; }
+        .bar-fill { background-color: #007bff; height: 100%; border-radius: 8px; }
 
-            .visual-insights-container { display: flex; flex-direction: column; gap: 25px; }
-            .top-row, .bottom-row { display: flex; flex-wrap: wrap; gap: 25px; }
-            .info-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px; text-align: left; overflow: hidden; }
-            
-            .visual-column { flex: 1.5; min-width: 350px; }
-            .insights-column { flex: 1; min-width: 300px; }
-            .characteristics-box { flex: 1.5; }
-            .leadership-box { flex: 1; }
+        .visual-insights-container { display: flex; flex-direction: column; gap: 25px; }
+        .top-row, .bottom-row { display: flex; flex-wrap: wrap; gap: 25px; }
+        .info-box { background-color: #e7f3ff; border: 1px solid #b8d9f7; border-radius: 15px; padding: 20px; text-align: left; overflow: hidden; }
+        
+        .visual-column { flex: 1.5; min-width: 350px; }
+        .insights-column { flex: 1; min-width: 300px; }
+        .characteristics-box { flex: 1.5; }
+        .leadership-box { flex: 1; }
 
-            .profile-section h3 { margin-top: 0; color: #2c3e50; }
-            .profile-section ul { list-style-type: '✓  '; padding-left: 20px; font-size: 1.1em; margin-top: 10px; }
-            .profile-section li { margin-bottom: 12px; }
-            .profile-section h4 { color: #0056b3; font-size: 1.1em; font-weight: 600; margin-top: 20px; margin-bottom: 5px; }
-            .profile-section p { margin-top: 0; }
-            .graph-container { width: 100%; height: 450px; display: flex; justify-content: center; align-items: center; }
-            .visual-note { font-size: 0.9em; text-align: center; color: #6c757d; margin-top: 15px; }
-        </style>
+        .profile-section h3 { margin-top: 0; color: #2c3e50; }
+        .profile-section ul { list-style-type: '✓  '; padding-left: 20px; font-size: 1.1em; margin-top: 10px; }
+        .profile-section li { margin-bottom: 12px; }
+        .profile-section h4 { color: #0056b3; font-size: 1.1em; font-weight: 600; margin-top: 20px; margin-bottom: 5px; }
+        .profile-section p { margin-top: 0; }
+        .graph-container { width: 100%; height: 450px; display: flex; justify-content: center; align-items: center; }
+        .visual-note { font-size: 0.9em; text-align: center; color: #6c757d; margin-top: 15px; }
+      </style>
     </head>
     <body>
-        <div class="container">
+
+      <!-- Header / Nav from your HTML file -->
+      <header>
+        <div class="logo">
+          <a href="https://thequantumfamily.com/">
+            <img src="https://thequantumfamily.com/images/logo.png" alt="The Quantum Family Logo">
+          </a>
+        </div>
+        <nav>
+          <a href="https://thequantumfamily.com/">Home</a>
+          <a href="https://thequantumfamily.com/tool">Tool</a>
+          <a href="https://thequantumfamily.net/survey/start.html">Survey</a>
+          <a href="https://thequantumfamily.com/paper">Paper</a>
+          <a href="https://thequantumfamily.com/mission">Mission</a>
+          <a href="https://thequantumfamily.com/game">Game</a>
+          <a href="https://thequantumfamily.com/about">About</a>
+        </nav>
+      </header>
+
+      <!-- Main Content Area -->
+      <div class="container">
+        {% if role != "Error" and details %}
             <div class="content-box reveal-box">
                 <h1>{{ role }}!!</h1>
                 <h2>Congratulations!</h2>
@@ -287,8 +306,21 @@ def index():
             <h3>The Journey Ahead</h3>
             <p>The role of a Pupil ends the day school ends. The Spatial Indicator (SI) tool reveals five leadership roles that form the foundation of the Free Market Economy (FME).</p>
             
-            <a href="#" class="cta-button">Validate results & receive paper.</a>
-        </div>
+            <a href="https://thequantumfamily.com/store" class="cta-button">Validate results & receive paper.</a>
+        {% else %}
+            <!-- This part shows if there's an error, like no user_id -->
+            <h1>Your Survey Results</h1>
+            <div class="content-box">
+                {{ graph_html | safe }}
+            </div>
+        {% endif %}
+      </div>
+
+      <!-- Footer from your HTML file -->
+      <footer>
+        <p>© The Quantum Family 2025.</p>
+      </footer>
+
     </body>
     </html>
     """
