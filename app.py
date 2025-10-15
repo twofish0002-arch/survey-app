@@ -12,7 +12,7 @@ SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 app = Flask(__name__)
 
 # ==============================================================================
-# 1. PRESENTATION LAYER (HTML TEMPLATE - with Final Font/Spacing Polish)
+# 1. PRESENTATION LAYER (HTML TEMPLATE - with Final Font Polish)
 # ==============================================================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -36,7 +36,7 @@ HTML_TEMPLATE = """
         
         .left-column, .right-column{display:flex;flex-direction:column;gap:24px;}
         .card{border: 1px solid #e2e8f0; border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.04);padding:24px;position:relative;overflow:hidden;}
-        .card-header{font-size:0.9rem;font-weight:600;color:#1a202c;margin-top:0;margin-bottom:16px;border-bottom:1px solid #e2e8f0;padding-bottom:10px;}
+        .card-header{font-size:0.85rem;font-weight:600;color:#1a202c;margin-top:0;margin-bottom:16px;border-bottom:1px solid #e2e8f0;padding-bottom:10px; text-transform: uppercase; letter-spacing: 0.5px;}
         
         .archetype-card{border-top:5px solid var(--accent-color);text-align:center;padding-top:32px;}
         .archetype-card h2{margin:0;font-size:1.8rem;color:#1a202c;}
@@ -72,10 +72,11 @@ HTML_TEMPLATE = """
         input[type=range]::-webkit-slider-thumb { box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 2px solid white; height: 18px; width: 18px; border-radius: 50%; background: var(--accent-color); cursor: pointer; -webkit-appearance: none; margin-top: -6.5px; }
         .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 500; color: #718096; margin: 0 4px; }
 
-        .metric-slider{display:grid;grid-template-columns:75px 1fr;align-items:center;margin-bottom:12px;gap:8px;}
-        .metric-slider .metric-name{font-weight:500;font-size:0.8rem;text-align:right;}
+        /* --- FINAL FONT SIZE ADJUSTMENTS --- */
+        .metric-slider{display:grid;grid-template-columns:70px 1fr;align-items:center;margin-bottom:10px;gap:8px;}
+        .metric-slider .metric-name{font-weight:500;font-size:0.75rem;text-align:right;}
         .metric-slider .track-container{display:flex;align-items:center;flex-grow:1;gap:8px;}
-        .metric-slider .label{font-size:0.7rem;color:#666;}
+        .metric-slider .label{font-size:0.65rem;color:#666;}
         .metric-slider .track{position:relative;height:3px;flex-grow:1;background-color:#ccc;border-radius:2px;}
         .metric-slider .dot{position:absolute;top:-5px;width:13px;height:13px;background-color:var(--accent-color);border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:left 0.3s ease-in-out;}
         
@@ -136,9 +137,8 @@ HTML_TEMPLATE = """
 </body>
 </html>
 """
-
 # ==============================================================================
-# 2. DATA & CONFIGURATION
+# 2. DATA & CONFIGURATION (No changes below)
 # ==============================================================================
 role_details = {
     "Pupil": { "game_name": "Standardised Game", "color": "#8d99ae", "title": "A Classroom Leader", "start_text": "You are the Pupil, a potential Classroom Leader trained to listen, copy, and perform until the score says you’re enough. The Standardised Game promises safety and success if you comply, fit its pattern and adopt its values, yet it measures only what can be counted, not what truly ignites you.", "play_text": "You may feel pressure to please, to stay within the narrow lines that others drew. That tension isn’t failure; it’s proof that you still have a self. The game feels serious, but it is not the world; its walls are a temporary Hollywood set, and you are the world outside.", "quest_text": "Hold on to your values; they are assets the world wants and rewards. Remember what excites you, what feels true, what matters when nobody’s watching. When the noise of grinding tests grows loud, look for the edge of the stage because it’s all a game, a big temporary act.", "legacy_text": "One day, the bell will ring and the stage lights will fade. You’ll step beyond this script and carry forward what the game could never grade: your curiosity, your courage, your heart. Knowing your value is where a great education truly begins.", "traits": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"], "q_and_a": [ {"q": "What excites you?", "a": "Doing the task exactly right and getting approval."}, {"q": "What matters?", "a": "Safety, clear instructions, and meeting expectations."}, {"q": "A great day looks like…", "a": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick."}, {"q": "What you don’t like…", "a": "Feeling like you’re in a perpetual state of emergency."}, {"q": "Secret power", "a": "You are excellent at following orders in an emergency."}, {"q": "Leadership style", "a": "As a classroom leader, you enjoy being at the top of your class and setting the standard for the other pupils."} ] },
