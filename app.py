@@ -12,13 +12,13 @@ SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 app = Flask(__name__)
 
 # ==============================================================================
-# 1. PRESENTATION LAYER (HTML TEMPLATE - with FINAL CSS)
+# 1. PRESENTATION LAYER (HTML TEMPLATE - with font size fixes)
 # ==============================================================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale-1.0"><title>Your Archetype Dashboard</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Archetype Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -47,7 +47,7 @@ HTML_TEMPLATE = """
         
         .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
         .kpi-card{padding:16px;text-align:center;}
-        .kpi-card .value{font-size:2.5rem;font-weight:700;color:#1a202c;line-height:1;}
+        .kpi-card .value{font-size:2.0rem;font-weight:700;color:#1a202c;line-height:1;} /* FONT SIZE REDUCED */
         .kpi-card .label{font-size:0.8rem;color:#718096;text-transform:uppercase;margin-top:8px;font-weight:500;}
 
         .journey-section h4{margin:16px 0 6px 0;font-weight:600;color:#2d3748;}
@@ -72,17 +72,14 @@ HTML_TEMPLATE = """
         input[type=range]::-webkit-slider-thumb { box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 2px solid white; height: 18px; width: 18px; border-radius: 50%; background: var(--accent-color); cursor: pointer; -webkit-appearance: none; margin-top: -6.5px; }
         .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 500; color: #718096; margin: 0 4px; }
 
-        .metric-slider{display:grid;grid-template-columns:100px 1fr;align-items:center;margin-bottom:15px;gap:12px;}
-        .metric-slider .metric-name{font-weight:600;font-size:0.9rem;text-align:right;}
+        .metric-slider{display:grid;grid-template-columns:90px 1fr;align-items:center;margin-bottom:15px;gap:12px;} /* WIDTH REDUCED */
+        .metric-slider .metric-name{font-weight:600;font-size:0.8rem;text-align:right;} /* FONT SIZE REDUCED */
         .metric-slider .track-container{display:flex;align-items:center;flex-grow:1;gap:8px;}
         .metric-slider .label{font-size:0.8rem;color:#666;}
         .metric-slider .track{position:relative;height:5px;flex-grow:1;background-color:#ccc;border-radius:3px;}
         .metric-slider .dot{position:absolute;top:-5px;width:15px;height:15px;background-color:var(--accent-color);border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:left 0.3s ease-in-out;}
         
-        /* THIS IS THE FINAL FIX: A lower breakpoint for tablet sizes */
-        @media (max-width: 768px) { 
-            .dashboard-grid { grid-template-columns: 1fr; } 
-        }
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -141,7 +138,7 @@ HTML_TEMPLATE = """
 """
 
 # ==============================================================================
-# 2. DATA & CONFIGURATION (Full text)
+# 2. DATA & CONFIGURATION
 # ==============================================================================
 role_details = {
     "Pupil": { "game_name": "Standardised Game", "color": "#8d99ae", "title": "A Classroom Leader", "start_text": "You are the Pupil, a potential Classroom Leader trained to listen, copy, and perform until the score says you’re enough. The Standardised Game promises safety and success if you comply, fit its pattern and adopt its values, yet it measures only what can be counted, not what truly ignites you.", "play_text": "You may feel pressure to please, to stay within the narrow lines that others drew. That tension isn’t failure; it’s proof that you still have a self. The game feels serious, but it is not the world; its walls are a temporary Hollywood set, and you are the world outside.", "quest_text": "Hold on to your values; they are assets the world wants and rewards. Remember what excites you, what feels true, what matters when nobody’s watching. When the noise of grinding tests grows loud, look for the edge of the stage because it’s all a game, a big temporary act.", "legacy_text": "One day, the bell will ring and the stage lights will fade. You’ll step beyond this script and carry forward what the game could never grade: your curiosity, your courage, your heart. Knowing your value is where a great education truly begins.", "traits": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"], "q_and_a": [ {"q": "What excites you?", "a": "Doing the task exactly right and getting approval."}, {"q": "What matters?", "a": "Safety, clear instructions, and meeting expectations."}, {"q": "A great day looks like…", "a": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick."}, {"q": "What you don’t like…", "a": "Feeling like you’re in a perpetual state of emergency."}, {"q": "Secret power", "a": "You are excellent at following orders in an emergency."}, {"q": "Leadership style", "a": "As a classroom leader, you enjoy being at the top of your class and setting the standard for the other pupils."} ] },
@@ -157,7 +154,6 @@ display_slider_metrics = [{'metric':"Freedom",'start_label':"Follow",'end_label'
 # ==============================================================================
 # 3. PLOTTING HELPER FUNCTIONS & FLASK ROUTE
 # ==============================================================================
-# ... (No changes to the rest of the Python code) ...
 def make_cube(origin,size,color,visible=False):
     x0,y0,z0=origin; dx,dy,dz=size; vertices=np.array([[x0,y0,z0],[x0+dx,y0,z0],[x0+dx,y0+dy,z0],[x0,y0+dy,z0],[x0,y0,z0+dz],[x0+dx,y0,z0+dz],[x0+dx,y0+dy,z0+dz],[x0,y0+dy,z0+dz]]); edges=[(0,1),(1,2),(2,3),(3,0),(4,5),(5,6),(6,7),(7,4),(0,4),(1,5),(2,6),(3,7)]
     return [go.Scatter3d(x=[vertices[e[0],0],vertices[e[1],0]],y=[vertices[e[0],1],vertices[e[1],1]],z=[vertices[e[0],2],vertices[e[1],2]],mode="lines",line=dict(color=color,width=4),showlegend=False,visible=visible) for e in edges]
