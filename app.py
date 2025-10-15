@@ -12,38 +12,37 @@ SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 app = Flask(__name__)
 
 # ==============================================================================
-# 1. PRESENTATION LAYER (HTML TEMPLATE - with CSS and full text)
+# 1. PRESENTATION LAYER (HTML TEMPLATE - with FINAL CSS)
 # ==============================================================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Archetype Dashboard</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale-1.0"><title>Your Archetype Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --accent-color: {{ role_info.color }}; }
-        body{font-family:'Inter',sans-serif;background-color:#f0f2f5;color:#4a5568;margin:0;padding:24px;box-sizing: border-box;}
+        body{font-family:'Inter',sans-serif;background-color:#fff;color:#4a5568;margin:0;padding:24px;box-sizing: border-box;}
         
         .dashboard-grid{
             display: grid;
-            /* This is the robust 1/3, 2/3 column definition */
-            grid-template-columns: minmax(450px, 1fr) 2fr;
+            grid-template-columns: 1fr 2fr; 
             gap: 24px;
             width: 100%;
             max-width: 1600px;
-            margin: 0 auto; /* Center the grid on the page */
+            margin: 0 auto;
         }
         
         .left-column, .right-column{display:flex;flex-direction:column;gap:24px;}
-        .card{background:#fff;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.04);padding:24px;position:relative;overflow:hidden;}
+        .card{border: 1px solid #e2e8f0; border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.04);padding:24px;position:relative;overflow:hidden;}
         .card-header{font-size:1.1rem;font-weight:600;color:#1a202c;margin-top:0;margin-bottom:16px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;}
         
         .archetype-card{border-top:5px solid var(--accent-color);text-align:center;padding-top:32px;}
         .archetype-card h2{margin:0;font-size:2rem;color:#1a202c;}
         .archetype-card p{margin:4px 0 0 0;font-size:1.1rem;color:var(--accent-color);font-weight:600;}
         
-        .pupil-warning { background-color: #fffbeb; border-left: 5px solid #f59e0b; padding: 16px; border-radius: 8px; font-size: 0.95rem; line-height: 1.6; color: #b45309; }
+        .pupil-warning { background-color: #fffbeb; border-left: 5px solid #f59e0b; padding: 16px; border-radius: 8px; font-size: 0.95rem; line-height: 1.6; color: #b45309; margin-bottom: 0;}
         .pupil-warning strong { color: #92400e; }
         
         .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
@@ -80,8 +79,8 @@ HTML_TEMPLATE = """
         .metric-slider .track{position:relative;height:5px;flex-grow:1;background-color:#ccc;border-radius:3px;}
         .metric-slider .dot{position:absolute;top:-5px;width:15px;height:15px;background-color:var(--accent-color);border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:left 0.3s ease-in-out;}
         
-        /* This media query collapses the grid to 1 column on smaller screens */
-        @media (max-width: 992px) { 
+        /* THIS IS THE FINAL FIX: A lower breakpoint for tablet sizes */
+        @media (max-width: 768px) { 
             .dashboard-grid { grid-template-columns: 1fr; } 
         }
     </style>
@@ -142,7 +141,7 @@ HTML_TEMPLATE = """
 """
 
 # ==============================================================================
-# 2. DATA & CONFIGURATION (Full text restored)
+# 2. DATA & CONFIGURATION (Full text)
 # ==============================================================================
 role_details = {
     "Pupil": { "game_name": "Standardised Game", "color": "#8d99ae", "title": "A Classroom Leader", "start_text": "You are the Pupil, a potential Classroom Leader trained to listen, copy, and perform until the score says you’re enough. The Standardised Game promises safety and success if you comply, fit its pattern and adopt its values, yet it measures only what can be counted, not what truly ignites you.", "play_text": "You may feel pressure to please, to stay within the narrow lines that others drew. That tension isn’t failure; it’s proof that you still have a self. The game feels serious, but it is not the world; its walls are a temporary Hollywood set, and you are the world outside.", "quest_text": "Hold on to your values; they are assets the world wants and rewards. Remember what excites you, what feels true, what matters when nobody’s watching. When the noise of grinding tests grows loud, look for the edge of the stage because it’s all a game, a big temporary act.", "legacy_text": "One day, the bell will ring and the stage lights will fade. You’ll step beyond this script and carry forward what the game could never grade: your curiosity, your courage, your heart. Knowing your value is where a great education truly begins.", "traits": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"], "q_and_a": [ {"q": "What excites you?", "a": "Doing the task exactly right and getting approval."}, {"q": "What matters?", "a": "Safety, clear instructions, and meeting expectations."}, {"q": "A great day looks like…", "a": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick."}, {"q": "What you don’t like…", "a": "Feeling like you’re in a perpetual state of emergency."}, {"q": "Secret power", "a": "You are excellent at following orders in an emergency."}, {"q": "Leadership style", "a": "As a classroom leader, you enjoy being at the top of your class and setting the standard for the other pupils."} ] },
@@ -155,16 +154,18 @@ role_details = {
 cube_definitions=[{'label':role,'size':(i,i,i),'color':details['color']} for i,(role,details) in enumerate(role_details.items())]; cube_definitions[0]['size']=(0.3,0.3,0.3)
 display_slider_metrics = [{'metric':"Freedom",'start_label':"Follow",'end_label':"Lead"},{'metric':"Security",'start_label':"Known",'end_label':"Unknown"},{'metric':"Responsibility",'start_label':"Social",'end_label':"Personal"},{'metric':"Control",'start_label':"Zero",'end_label':"Full"},{'metric':"Attention",'start_label':"Narrow",'end_label':"Broad"},{'metric':"Information",'start_label':"Consume",'end_label':"Create"}]
 
+# ==============================================================================
+# 3. PLOTTING HELPER FUNCTIONS & FLASK ROUTE
+# ==============================================================================
+# ... (No changes to the rest of the Python code) ...
 def make_cube(origin,size,color,visible=False):
     x0,y0,z0=origin; dx,dy,dz=size; vertices=np.array([[x0,y0,z0],[x0+dx,y0,z0],[x0+dx,y0+dy,z0],[x0,y0+dy,z0],[x0,y0,z0+dz],[x0+dx,y0,z0+dz],[x0+dx,y0+dy,z0+dz],[x0,y0+dy,z0+dz]]); edges=[(0,1),(1,2),(2,3),(3,0),(4,5),(5,6),(6,7),(7,4),(0,4),(1,5),(2,6),(3,7)]
     return [go.Scatter3d(x=[vertices[e[0],0],vertices[e[1],0]],y=[vertices[e[0],1],vertices[e[1],1]],z=[vertices[e[0],2],vertices[e[1],2]],mode="lines",line=dict(color=color,width=4),showlegend=False,visible=visible) for e in edges]
 def make_sphere(center,radius,color, visible=False):
     u=np.linspace(0,2*np.pi,40); v=np.linspace(0,np.pi,20); x=center[0]+radius*np.outer(np.cos(u),np.sin(v)); y=center[1]+radius*np.outer(np.sin(u),np.sin(v)); z=center[2]+radius*np.outer(np.ones(np.size(u)),np.cos(v))
     return go.Mesh3d(x=x.flatten(),y=y.flatten(),z=z.flatten(),color=color,opacity=0.5,alphahull=0,showlegend=False,name="Player Sphere",lighting=dict(ambient=0.4,diffuse=0.8,specular=0.2,roughness=0.5),lightposition=dict(x=100,y=200,z=50), visible=visible)
-
 @app.route("/")
 def index():
-    # ... (rest of the Python code, no changes here)
     if USE_MOCK_DATA:
         mock_data={'user_id':['user_alpha'],'Freedom':[12],'Security':[13],'Responsibility':[15],'k_band':[0]}; df=pd.DataFrame(mock_data); df.columns=[c.lower().replace(' ','_') for c in df.columns]
     else:
