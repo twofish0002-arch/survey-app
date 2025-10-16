@@ -12,7 +12,7 @@ SHEETDB_URL = "https://sheetdb.io/api/v1/7fida3dgawvel"
 app = Flask(__name__)
 
 # ==============================================================================
-# 1. PRESENTATION LAYER (HTML TEMPLATE - with Final Polish)
+# 1. PRESENTATION LAYER (HTML TEMPLATE - with new Validation Card)
 # ==============================================================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -48,20 +48,10 @@ HTML_TEMPLATE = """
         .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
         .kpi-card{padding:16px;text-align:center;}
         .kpi-card .value{font-size:1.8rem;font-weight:700;color:#1a202c;line-height:1;}
-        .kpi-card .label{
-            font-size:0.65rem;
-            color:#718096;
-            text-transform:uppercase;
-            margin-top:8px;
-            font-weight:600;
-            /* --- THIS IS THE FIX --- */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .kpi-card .label{font-size:0.65rem;color:#718096;text-transform:uppercase;margin-top:8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-        .journey-section h4{margin:16px 0 6px 0;font-weight:600;color:#2d3748; font-size:0.9rem;}
-        .journey-section p{margin:0 0 8px 0;line-height:1.6; font-size:0.9rem;}
+        .journey-section h4, .validation-card h3 {margin:16px 0 6px 0;font-weight:600;color:#2d3748; font-size:0.9rem;}
+        .journey-section p, .validation-card p {margin:0 0 12px 0;line-height:1.6; font-size:0.9rem;}
         
         .traits-list ul {list-style:none;padding:0;margin:0;}
         .traits-list li {margin-bottom:8px;display:flex;align-items:center;font-weight:500; font-size:0.9rem;}
@@ -89,6 +79,23 @@ HTML_TEMPLATE = """
         .metric-slider .track{position:relative;height:3px;flex-grow:1;background-color:#ccc;border-radius:2px;}
         .metric-slider .dot{position:absolute;top:-5px;width:13px;height:13px;background-color:var(--accent-color);border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:left 0.3s ease-in-out;}
         
+        /* --- NEW VALIDATION CARD STYLES --- */
+        .validation-card ul { list-style-position: inside; padding-left: 0; font-size: 0.9rem; }
+        .validation-card li { margin-bottom: 8px; }
+        .validate-button {
+            display: inline-block;
+            background-color: #007bff; /* The specific blue color */
+            color: #fff;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+        }
+        .validate-button:hover { background-color: #0056b3; }
+
         @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -101,16 +108,29 @@ HTML_TEMPLATE = """
             <div class="card"><h3 class="card-header">Player Dynamic Characteristics</h3>{% for metric in display_metrics[:3] %}<div class="metric-slider"><div class="metric-name">{{ metric.metric }}</div><div class="track-container"><span class="label">{{ metric.start_label }}</span><div class="track"><div class="dot" id="dot-{{ metric.metric.lower() }}" style="left: calc({{ k_band }} / 5 * 100% - 7.5px);"></div></div><span class="label">{{ metric.end_label }}</span></div></div>{% endfor %}</div>
             <div class="card"><h3 class="card-header">Game Static Characteristics</h3>{% for metric in display_metrics[3:] %}<div class="metric-slider"><div class="metric-name">{{ metric.metric }}</div><div class="track-container"><span class="label">{{ metric.start_label }}</span><div class="track"><div class="dot" id="dot-{{ metric.metric.lower() }}" style="left: calc({{ k_band }} / 5 * 100% - 7.5px);"></div></div><span class="label">{{ metric.end_label }}</span></div></div>{% endfor %}</div>
             <div class="card"><h3 class="card-header">At a Glance</h3><div class="traits-list"><ul>{% for trait in role_info.traits %}<li>{{ trait }}</li>{% endfor %}</ul></div><div class="qa-list">{% for item in role_info.q_and_a %}<h4>{{ item.q }}</h4><p>{{ item.a }}</p>{% endfor %}</div></div>
+            
+            <!-- NEW VALIDATION CARD HTML BLOCK -->
+            <div class="card validation-card">
+                <h3>Validate your result: one token, one signal</h3>
+                <p>For 1 euro, you validate yourself and everyone who has not yet. Each validation adds your data to a growing dataset, sending a clear signal: it is safe and wise to differentiate beyond “Pupil.” With validation, you also receive the full SI Paper.</p>
+                <h3>What the Paper reveals</h3>
+                <ul>
+                    <li>The reality beyond standardised education.</li>
+                    <li>A new language for growth.</li>
+                    <li>Why some thrive as Founders while others flourish as Scholars.</li>
+                    <li>How the five games are designed and why they feel different.</li>
+                    <li>Why Responsibility matters most.</li>
+                    <li>Proof: 10 years of practice, thousands of reflections.</li>
+                </ul>
+                <h3>Privacy</h3>
+                <p>Your results are stored anonymously. Only validated results can send a clear signal for change.</p>
+                <a href="https://thequantumfamily.com/store" class="validate-button">Validate results &amp; receive the paper →</a>
+            </div>
+
         </div>
         <div class="right-column">
             <div class="card graph-card">{{graph_html|safe}}</div>
-            <div class="card slider-control-card">
-                <h3 class="card-header" id="slider-title">Role: {{ role }}</h3>
-                <div class="html-slider-container">
-                    <input type="range" min="0" max="5" value="{{ k_band }}" id="archetype-slider">
-                    <div class="slider-labels">{% for d in cube_definitions %}<span>{{ d.label }}</span>{% endfor %}</div>
-                </div>
-            </div>
+            <div class="card slider-control-card"><h3 class="card-header" id="slider-title">Role: {{ role }}</h3><div class="html-slider-container"><input type="range" min="0" max="5" value="{{ k_band }}" id="archetype-slider"><div class="slider-labels">{% for d in cube_definitions %}<span>{{ d.label }}</span>{% endfor %}</div></div></div>
             <div class="card">
                 <h3 class="card-header">Your Journey</h3>
                 <div class="journey-section"><h4>Start</h4><p>{{role_info.start_text}}</p><h4>Play</h4><p>{{role_info.play_text}}</p><h4>Quest</h4><p>{{role_info.quest_text}}</p><h4>Legacy</h4><p>{{role_info.legacy_text}}</p></div>
@@ -146,12 +166,11 @@ HTML_TEMPLATE = """
 </body>
 </html>
 """
-
+# Python code continues below, no changes needed...
 # ==============================================================================
-# 2. DATA & CONFIGURATION (No changes below)
+# 2. DATA & CONFIGURATION
 # ==============================================================================
-# The Python code below this point remains identical. It contains all the full text.
-#
+# All the full text dictionaries and python logic follow here, unchanged from the last full version...
 role_details = {
     "Pupil": { "game_name": "Standardised Game", "color": "#8d99ae", "title": "A Classroom Leader", "start_text": "You are the Pupil, a potential Classroom Leader trained to listen, copy, and perform until the score says you’re enough. The Standardised Game promises safety and success if you comply, fit its pattern and adopt its values, yet it measures only what can be counted, not what truly ignites you.", "play_text": "You may feel pressure to please, to stay within the narrow lines that others drew. That tension isn’t failure; it’s proof that you still have a self. The game feels serious, but it is not the world; its walls are a temporary Hollywood set, and you are the world outside.", "quest_text": "Hold on to your values; they are assets the world wants and rewards. Remember what excites you, what feels true, what matters when nobody’s watching. When the noise of grinding tests grows loud, look for the edge of the stage because it’s all a game, a big temporary act.", "legacy_text": "One day, the bell will ring and the stage lights will fade. You’ll step beyond this script and carry forward what the game could never grade: your curiosity, your courage, your heart. Knowing your value is where a great education truly begins.", "traits": ["Follows rules", "Seeks approval", "Dislikes mistakes", "Likes clear steps", "Waits for instructions"], "q_and_a": [ {"q": "What excites you?", "a": "Doing the task exactly right and getting approval."}, {"q": "What matters?", "a": "Safety, clear instructions, and meeting expectations."}, {"q": "A great day looks like…", "a": "The plan is clear and there are no surprises. You follow instructions and feel proud when you finish with a tick."}, {"q": "What you don’t like…", "a": "Feeling like you’re in a perpetual state of emergency."}, {"q": "Secret power", "a": "You are excellent at following orders in an emergency."}, {"q": "Leadership style", "a": "As a classroom leader, you enjoy being at the top of your class and setting the standard for the other pupils."} ] },
     "Scholar": { "game_name": "Academic Game", "color": "#0077b6", "title": "An Academic Leader", "start_text": "You are matched with the Scholar, a potential Academic Leader devoted to truth and understanding. Your gift is to discover, test, and preserve knowledge in a world that rewards depth, focus, and disciplined curiosity. You look beneath the surface and connect the past to the future through clear reasoning.", "play_text": "The Academic Game fits you because it matches your need for clarity and structure while respecting your independence of thought. Guided by mentors, you progress steadily from curiosity to comprehension in a world where patience and precision lead to mastery.", "quest_text": "You ask and resolve “What’s this?” questions, the kind that seek truth and understanding. Resolution comes when knowledge feels complete, sharpening thought and strengthening community. Each time you clarify something for yourself, you make it clearer for others.", "legacy_text": "You are trusted to question deeply, verify carefully, and teach what endures. Scholars guard truth, refine knowledge through honest inquiry, and pass it forward so others can build wisely upon it. Without them, civilisation forgets what it has learned.", "traits": ["Asks questions", "Seeks truth", "Dislikes rushing", "Studies deeply", "Shares knowledge"], "q_and_a": [ {"q": "What excites you?", "a": "Asking big questions and finding answers."}, {"q": "What matters?", "a": "Clear thinking, careful work, and learning."}, {"q": "A great day looks like…", "a": "You wake up with a puzzle in your head. You spend hours reading, testing, and writing until the answer starts to shine."}, {"q": "What you don’t like…", "a": "Being rushed to finish before you’re ready."}, {"q": "Secret power", "a": "You help the world remember what is true."}, {"q": "Leadership style", "a": "As an academic leader, you enjoy teaching others and showing them what’s real and worth knowing."} ] },
